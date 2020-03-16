@@ -7,18 +7,19 @@
 import datetime
 from decimal import Decimal 
 import json
-import time
-import traceback
+import os
 import subprocess
 import sys
+import time
+import traceback
 
+os.system('clear')
 first_time = True
 
 #
-# func
+# order_type: buy/sell
 #
-
-def delete_order(order_type):
+def delete_orders(order_type):
     cmd = subprocess.Popen(["clikraken", "--raw", "ol"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     cmd.wait()
     out, err = cmd.communicate()
@@ -36,7 +37,14 @@ def delete_order(order_type):
             print(out_json['result'])
         j += 1
 
-def create_order(order_type, start_price, end_price, step_price):
+
+#
+# order_type: buy/sell
+# start_price:
+# end_price: 
+# step_price:
+#
+def add_orders(order_type, start_price, end_price, step_price):
     print("CREATE ORDER:")
     for price in range(start_price, end_price, step_price):
         cmd = subprocess.Popen(["clikraken", "--raw", "p", "-l", "2:1", "-t", "limit", order_type, "1", str(price)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -45,36 +53,8 @@ def create_order(order_type, start_price, end_price, step_price):
         out_json = json.loads(out)
         print(out_json['result'])
 
-#
-# delete/create order 
-#
 
-#delete_order("sell")
-#delete_order("buy")
-
-### WARNING!!! it fails between 701000 and 702000, likely too big a number
-###create_order("sell", 701000, 702000, 100)
-
-#create_order("sell", 19000, 20100, 100)
-#create_order("buy", 100, 5100, 100)
-
-#sys.exit()
-
-#
-# main loop
-#
-
-while True:
-    print('='*60)
-    if (first_time):
-        first_time = False
-    else:
-        time.sleep(60)
-    print(datetime.datetime.strptime(time.ctime(), "%a %b %d %H:%M:%S %Y"))
-
-    #
-    # get balance
-    #
+def get_balance():
     try: 
         cmd = subprocess.Popen(["clikraken", "--raw", "bal"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
@@ -88,11 +68,32 @@ while True:
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
-        continue
 
-    #
-    # get depth
-    #
+
+def get_trade_balance():
+    try: 
+        cmd = subprocess.Popen(["clikraken", "--raw", "tbal"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        cmd.wait()
+        out, err = cmd.communicate()
+        out_json = json.loads(out)
+        #print(out_json)
+        trade_balance = Decimal(out_json['result']['tb'])
+        margin_used = Decimal(out_json['result']['m'])
+        pos_cost = Decimal(out_json['result']['c'])
+        pos_pnl = Decimal(out_json['result']['n'])
+        margin_level = Decimal(out_json['result']['ml'])
+        print("TRADE BALANCE:")
+        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}".format("BALANCE", "", "COST", "MARGIN", "MARGIN LEVEL", "PNL"))
+        print("{:<25.8f}{:>5s}{:>20.8f}{:>20.8f}{:>20.2f}{:>20.2f}".format(trade_balance, "", pos_cost, margin_used, margin_level, pos_pnl))
+    except:
+        print("Unexpected Error!!")
+        print('-'*60)
+        traceback.print_exc(file=sys.stdout)
+        print('-'*60)
+
+
+def get_ticker_and_depth():
+    # depth
     try:
         cmd = subprocess.Popen(["clikraken", "--raw", "d", "-c", "100"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
@@ -120,11 +121,8 @@ while True:
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
-        continue
 
-    #
-    # get ticker 
-    #
+    # ticker
     try:
         cmd = subprocess.Popen(["clikraken", "--raw", "t"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
@@ -141,31 +139,98 @@ while True:
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
-        continue
 
-    #
-    # get active/open positions 
-    #
+
+def get_open_positions():
     try:
         cmd = subprocess.Popen(["clikraken", "--raw", "pos"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
         out, err = cmd.communicate()
         out_json = json.loads(out)
-        print("ACTIVE/OPEN POSITIONS:")
         #print(out_json)
-        pos = list(out_json['result'])
-        for i in pos:
-            print("{:>20s}{:>10.0s}{:>10.0f}{:>10.0f}{:>10.0f}".format(pos['ordertxid'], pos['type'], Decimal(pos['cost']), Decimal(pos['vol']), Decimal(pos['net'])))
+        pos_k = list(out_json['result'].keys())
+        pos_v = list(out_json['result'].values())
+        return pos_k, pos_v
     except:
         print("Unexpected Error!!")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
-        continue
 
-    #
-    # get open orders 
-    #
+##
+## show itemized active/open trade entries
+##
+## pos_k: list of keys (not used)
+## pos_v: list of values
+#def show_open_positions(pos_k, pos_v):
+#    try:
+#        print("OPEN POSITIONS:")
+#        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "COST", "VOL", "PNL"))
+#        for i in pos_v:
+#            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.2f}".format(i['ordertxid'], i['type'], Decimal(i['cost']), Decimal(i['vol']), Decimal(i['net'])))
+#            # beep sound
+#            #print("\a")
+#    except:
+#        print("Unexpected Error!!")
+#        print('-'*60)
+#        traceback.print_exc(file=sys.stdout)
+#        print('-'*60)
+
+#
+# aggregate cost/vol with the same order id and show 
+#
+# pos_k: list of keys (not used)
+# pos_v: list of values 
+#
+def show_open_positions(pos_k, pos_v):
+    try:
+        dist = {}
+        for v in pos_v:
+            #print("DIST {}".format(dist))
+            if (v['ordertxid'] in dist):
+                #print("FOUND IN DIST {}".format(v['ordertxid']))
+                dist_v = dist[v['ordertxid']]
+                dist_v['cost'] = Decimal(dist_v['cost']) + Decimal(v['cost'])
+                dist_v['vol'] = Decimal(dist_v['vol']) + Decimal(v['vol'])
+                dist_v['vol_closed'] = Decimal(dist_v['vol_closed']) + Decimal(v['vol_closed'])
+                dist_v['fee'] = Decimal(dist_v['fee']) + Decimal(v['fee'])
+                dist_v['value'] = Decimal(dist_v['value']) + Decimal(v['value'])
+                dist_v['margin'] = Decimal(dist_v['margin']) + Decimal(v['margin'])
+                dist_v['net'] = Decimal(dist_v['net']) + Decimal(v['net'])
+                dist[v['ordertxid']] = dist_v
+            else:
+                #print("NOT FOUND IN DIST {}".format(v['ordertxid']))
+                dist[v['ordertxid']] = v
+                
+        tot = None
+        print("GROUPED OPEN POSITIONS:")
+        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+        for v in dist.values():
+            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']), Decimal(v['net'])))
+            # beep sound
+            #print("\a"
+            if (tot is None):
+                tot = v
+            else:
+                tot['cost'] = Decimal(tot['cost']) + Decimal(v['cost'])
+                tot['vol'] = Decimal(tot['vol']) + Decimal(v['vol'])
+                tot['vol_closed'] = Decimal(tot['vol_closed']) + Decimal(v['vol_closed'])
+                tot['fee'] = Decimal(tot['fee']) + Decimal(v['fee'])
+                tot['value'] = Decimal(tot['value']) + Decimal(v['value'])
+                tot['margin'] = Decimal(tot['margin']) + Decimal(v['margin'])
+                tot['net'] = Decimal(tot['net']) + Decimal(v['net'])
+
+        print("SUM:")
+        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+        print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format("", "", Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']), Decimal(tot['net'])))
+    except:
+        print("Unexpected Error!!")
+        print('-'*60)
+        traceback.print_exc(file=sys.stdout)
+        print('-'*60)
+
+
+def get_open_orders():
     try:
         cmd = subprocess.Popen(["clikraken", "--raw", "ol"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
@@ -204,13 +269,10 @@ while True:
             print("{:<20s}{:>20.0f}{:>10.0f}{:>10.0s}".format("NEXT BUY/VOL/1-5X:", ol_buy_p, ol_buy_v, ol_buy_l))
         else:
             print("{:<20s}{:>20s}".format("NEXT BUY/VOL/1-5X:", "None"))
-
     except:
         print("Unexpected Error!!")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
-        continue
 
-print("program exit!")
         
