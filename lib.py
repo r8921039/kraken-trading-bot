@@ -44,14 +44,20 @@ def delete_orders(order_type):
 # end_price: 
 # step_price:
 #
-def add_orders(order_type, start_price, end_price, step_price):
-    print("CREATE ORDER:")
-    for price in range(start_price, end_price, step_price):
-        cmd = subprocess.Popen(["clikraken", "--raw", "p", "-l", "5:1", "-t", "limit", order_type, "1", str(price)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+def add_orders(order_type, start_price, step_price, order_count, order_size, dry_run = False):
+    print("PLACE ORDER:")
+    price = Decimal(start_price)
+    for i in range(1, order_count + 1):
+        # for dry run, add "-v" before "-t"i
+        args = ["clikraken", "--raw", "p", "-l", "5:1", "-t", "limit", order_type, str(order_size), str(price)]
+        if (dry_run == True):
+            args.append("-v")
+        cmd = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
         out, err = cmd.communicate()
         out_json = json.loads(out)
         print(out_json['result'])
+        price += Decimal(step_price)
 
 
 def get_balance():
@@ -83,8 +89,8 @@ def get_trade_balance():
         pos_pnl = Decimal(out_json['result']['n'])
         margin_level = Decimal(out_json['result']['ml'])
         print("TRADE BALANCE:")
-        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}".format("BALANCE", "", "COST", "MARGIN", "MARGIN LEVEL", "PNL"))
-        print("{:<25.8f}{:>5s}{:>20.8f}{:>20.8f}{:>20.2f}{:>20.2f}".format(trade_balance, "", pos_cost, margin_used, margin_level, pos_pnl))
+        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("BALANCE", "", "", "COST", "MARGIN", "MARGIN LEVEL", "PNL"))
+        print("{:<25.8f}{:>5s}{:>20s}{:>20.8f}{:>20.8f}{:>20.2f}{:>10.2f}".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
     except:
         print("Unexpected Error!!")
         print('-'*60)
@@ -204,9 +210,9 @@ def show_open_positions(pos_k, pos_v):
                 
         tot = None
         print("GROUPED OPEN POSITIONS:")
-        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
         for v in dist.values():
-            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
+            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.8f}{:>10.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']) / (Decimal(v['vol']) - Decimal(v['vol_closed'])), Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
             # beep sound
             #print("\a"
             if (tot is None):
@@ -221,8 +227,8 @@ def show_open_positions(pos_k, pos_v):
                 tot['net'] = Decimal(tot['net']) + Decimal(v['net'])
 
         print("SUM:")
-        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
-        print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format("", "", Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
+        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+        print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.8f}{:>10.2f}".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
     except:
         print("Unexpected Error!!")
         print('-'*60)
