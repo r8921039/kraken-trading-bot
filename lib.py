@@ -47,7 +47,7 @@ def delete_orders(order_type):
 def add_orders(order_type, start_price, end_price, step_price):
     print("CREATE ORDER:")
     for price in range(start_price, end_price, step_price):
-        cmd = subprocess.Popen(["clikraken", "--raw", "p", "-l", "2:1", "-t", "limit", order_type, "1", str(price)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        cmd = subprocess.Popen(["clikraken", "--raw", "p", "-l", "5:1", "-t", "limit", order_type, "1", str(price)], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
         out, err = cmd.communicate()
         out_json = json.loads(out)
@@ -167,7 +167,7 @@ def get_open_positions():
 #        print("OPEN POSITIONS:")
 #        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "COST", "VOL", "PNL"))
 #        for i in pos_v:
-#            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.2f}".format(i['ordertxid'], i['type'], Decimal(i['cost']), Decimal(i['vol']), Decimal(i['net'])))
+#            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.2f}".format(i['ordertxid'], i['type'], Decimal(i['cost']), Decimal(i['vol']) - Decimal(v['vol_closed']), Decimal(i['net'])))
 #            # beep sound
 #            #print("\a")
 #    except:
@@ -177,7 +177,7 @@ def get_open_positions():
 #        print('-'*60)
 
 #
-# aggregate cost/vol with the same order id and show 
+# aggregate (group) cost/vol with the same order id and show 
 #
 # pos_k: list of keys (not used)
 # pos_v: list of values 
@@ -206,7 +206,7 @@ def show_open_positions(pos_k, pos_v):
         print("GROUPED OPEN POSITIONS:")
         print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
         for v in dist.values():
-            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']), Decimal(v['net'])))
+            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
             # beep sound
             #print("\a"
             if (tot is None):
@@ -222,7 +222,7 @@ def show_open_positions(pos_k, pos_v):
 
         print("SUM:")
         print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
-        print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format("", "", Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']), Decimal(tot['net'])))
+        print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.2f}".format("", "", Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
     except:
         print("Unexpected Error!!")
         print('-'*60)

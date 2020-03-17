@@ -10,5 +10,5 @@ from lib import *
 ###create_order("sell", 701000, 702000, 100)
 
 #delete_orders("buy")
-#add_orders("buy", 5700, 5801, 100)
-os.system("clikraken ol | grep buy")
+#add_orders("buy", 100, 4001, 100)
+#os.system("clikraken ol | grep buy")
