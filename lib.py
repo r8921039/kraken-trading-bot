@@ -2,7 +2,7 @@
 
 # MEMO
 #date -r 1584214882
-#date -j -f "%Y %j %H %M %S" "2013 2 12 34 56" "+%a %b %d %T %Z %Y"
+#date -j -f "%Y %j %H %M %S" "2020 12 15 00 00 00" "+%s"
 
 import datetime
 from decimal import Decimal 

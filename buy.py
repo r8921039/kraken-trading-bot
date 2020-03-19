@@ -13,7 +13,7 @@ type="buy"
 
 #delete_orders(type)
 # add_orders(<type>, <start_price>, <step_price>, <order_count>, <order_size>, <dry_run>)
-#add_orders(type, 5000, -100, 1, 1, False) 
+add_orders(type, 6000, -100, 10, 1, False) 
 os.system("clikraken ol | grep {}".format(type))
 os.system("echo 'NUMBER OF ENTRIES: '")
 os.system("clikraken ol | grep {} | wc -l".format(type))
