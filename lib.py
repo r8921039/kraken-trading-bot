@@ -44,19 +44,24 @@ def delete_orders(order_type):
 # end_price: 
 # step_price:
 #
-def add_orders(order_type, start_price, step_price, order_count, order_size, dry_run = False):
+def add_orders(order_type, start_price, step_price, order_count, order_size, leverage, dry_run = False):
     print("PLACE ORDER:")
     price = Decimal(start_price)
     for i in range(1, order_count + 1):
-        # for dry run, add "-v" before "-t"i
-        args = ["clikraken", "--raw", "p", "-l", "5:1", "-t", "limit", order_type, str(order_size), str(price)]
+        args = ["clikraken", "--raw", "p", "-t", "limit", order_type, str(order_size), str(price)]
+        if (leverage != None and leverage != "1:1"):
+            args.append("-l")
+            args.append(leverage)
         if (dry_run == True):
             args.append("-v")
         cmd = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
         out, err = cmd.communicate()
         out_json = json.loads(out)
-        print(out_json['result'])
+        try:
+            print(out_json['result'])
+        except:
+            print(out_json)
         price += Decimal(step_price)
 
 
