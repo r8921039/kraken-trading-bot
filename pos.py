@@ -4,4 +4,7 @@ from lib import *
 
 pos_k, pos_v = get_open_positions()
 show_open_positions(pos_k, pos_v)
-get_trade_balance()
+show_ticker()
+show_open_orders()
+show_trade_balance()
+show_balance()

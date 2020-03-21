@@ -27,9 +27,10 @@ def delete_orders(order_type):
     ol_k = list(out_json['result']['open'].keys())
     ol_v = list(out_json['result']['open'].values())
     j = 0
+    print("DELETE ORDERS:") 
     for i in ol_v:
         if (i['descr']['type'] == order_type):
-            print("DELETE ORDER: %s %s %s %s" % (ol_k[j], i['descr']['type'], i['descr']['price'], i['vol']))
+            print("DELETED: %s %s %s %s" % (ol_k[j], i['descr']['type'], i['descr']['price'], i['vol']))
             cmd = subprocess.Popen(["clikraken", "--raw", "x", ol_k[j]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             cmd.wait()
             out, err = cmd.communicate()
@@ -65,7 +66,7 @@ def add_orders(order_type, start_price, step_price, order_count, order_size, lev
         price += Decimal(step_price)
 
 
-def get_balance():
+def show_balance():
     try: 
         cmd = subprocess.Popen(["clikraken", "--raw", "bal"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
@@ -74,6 +75,10 @@ def get_balance():
         #print(out_json)
         bal_xbt = Decimal(out_json['result']['XXBT'])
         bal_usd = Decimal(out_json['result']['ZUSD'])
+        print("ACCOUNT BALANCE:")
+        print("{:<30s}{:>20.8f}".format("BTC", bal_xbt))
+        print("{:<30s}{:>20.8f}".format("USD", bal_usd))
+        print()
     except:
         print("Unexpected Error!!")
         print('-'*60)
@@ -81,7 +86,7 @@ def get_balance():
         print('-'*60)
 
 
-def get_trade_balance():
+def show_trade_balance():
     try: 
         cmd = subprocess.Popen(["clikraken", "--raw", "tbal"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
@@ -92,10 +97,14 @@ def get_trade_balance():
         margin_used = Decimal(out_json['result']['m'])
         pos_cost = Decimal(out_json['result']['c'])
         pos_pnl = Decimal(out_json['result']['n'])
-        margin_level = Decimal(out_json['result']['ml'])
-        print("TRADE BALANCE:")
-        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("BALANCE", "", "", "COST", "MARGIN", "MARGIN LEVEL", "PNL"))
-        print("{:<25.8f}{:>5s}{:>20s}{:>20.8f}{:>20.8f}{:>20.2f}{:>10.2f}".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
+        try:
+            margin_level = out_json['result']['ml']
+        except:
+            margin_level = "N/A"
+        print("OPEN TRADE BALANCE:")
+        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("TOTAL ASSET (USD)", "", "", "TOTAL COST", "TOTAL MARGIN", "MARGIN LEVEL", "PNL"))
+        print("{:<25.8f}{:>5s}{:>20s}{:>20.8f}{:>20.8f}{:>20s}{:>10.2f}".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
+        print()
     except:
         print("Unexpected Error!!")
         print('-'*60)
@@ -103,7 +112,26 @@ def get_trade_balance():
         print('-'*60)
 
 
-def get_ticker_and_depth():
+def show_ticker():
+    try:
+        cmd = subprocess.Popen(["clikraken", "--raw", "t"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        cmd.wait()
+        out, err = cmd.communicate()
+        out_json = json.loads(out)
+        #print(out_json)
+        ticker_p = Decimal(out_json['result']['XXBTZUSD']['c'][0])
+        ticker_v = Decimal(out_json['result']['XXBTZUSD']['c'][1])
+        print("TICKER:")
+        print("{:<30s}{:>20.8f}{:>20.8f}".format("PRICE/VOL:", ticker_p, ticker_v))
+        print()
+    except:
+        print("Unexpected Error!!")
+        print('-'*60)
+        traceback.print_exc(file=sys.stdout)
+        print('-'*60)
+
+
+def show_ticker_and_depth():
     # depth
     try:
         cmd = subprocess.Popen(["clikraken", "--raw", "d", "-c", "100"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -142,16 +170,20 @@ def get_ticker_and_depth():
         #print(out_json)
         ticker_p = Decimal(out_json['result']['XXBTZUSD']['c'][0])
         ticker_v = Decimal(out_json['result']['XXBTZUSD']['c'][1])
+        print("TICKER AND DEPTH")
         print("{:<20s}{:>20.0f}{:>20.0f}".format("ASKS/WALL:", asks_ave, asks_vol))
         print("{:<20s}{:>20.0f}{:>10.0f}{:>10.0f}".format("TICKER/SPREADS:", ticker_p, asks_ave-ticker_p, ticker_p-bids_ave))
         print("{:<20s}{:>20.0f}{:>20.0f}".format("BIDS/WALL:", bids_ave, bids_vol))
+        print()
     except:
         print("Unexpected Error!!")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
 
-
+#
+# return pos_k, pos_v
+#
 def get_open_positions():
     try:
         cmd = subprocess.Popen(["clikraken", "--raw", "pos"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -188,7 +220,7 @@ def get_open_positions():
 #        print('-'*60)
 
 #
-# aggregate (group) cost/vol with the same order id and show 
+# show grouped/aggregated cost/vol with the same order id and show 
 #
 # pos_k: list of keys (not used)
 # pos_v: list of values 
@@ -231,9 +263,11 @@ def show_open_positions(pos_k, pos_v):
                 tot['margin'] = Decimal(tot['margin']) + Decimal(v['margin'])
                 tot['net'] = Decimal(tot['net']) + Decimal(v['net'])
 
-        print("SUM:")
-        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
-        print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.8f}{:>10.2f}".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
+        if (tot is not None):
+            print("SUM:")
+            print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.8f}{:>10.2f}".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
+        print()
     except:
         print("Unexpected Error!!")
         print('-'*60)
@@ -241,7 +275,7 @@ def show_open_positions(pos_k, pos_v):
         print('-'*60)
 
 
-def get_open_orders():
+def show_open_orders():
     try:
         cmd = subprocess.Popen(["clikraken", "--raw", "ol"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         cmd.wait()
@@ -271,15 +305,17 @@ def get_open_orders():
             #print(ol_k[j])
             #j += 1
 
+        print("OPEN ORDERS")
         if (ol_sell_p != None):
-            print("{:<20s}{:>20.0f}{:>10.0f}{:>10.0s}".format("NEXT SELL/VOL/1-5X:", ol_sell_p, ol_sell_v, ol_sell_l))
+            print("{:<30s}{:>20.0f}{:>20.0f}{:>20.0s}".format("NEXT SELL/VOL/1-5X:", ol_sell_p, ol_sell_v, ol_sell_l))
         else:
-            print("{:<20s}{:>20s}".format("NEXT SELL/VOL/1-5X:", "None"))
+            print("{:<30s}{:>20s}".format("NEXT SELL/VOL/1-5X:", "None"))
 
         if (ol_buy_p != None):
-            print("{:<20s}{:>20.0f}{:>10.0f}{:>10.0s}".format("NEXT BUY/VOL/1-5X:", ol_buy_p, ol_buy_v, ol_buy_l))
+            print("{:<30s}{:>20.0f}{:>20.0f}{:>20.0s}".format("NEXT BUY/VOL/1-5X:", ol_buy_p, ol_buy_v, ol_buy_l))
         else:
-            print("{:<20s}{:>20s}".format("NEXT BUY/VOL/1-5X:", "None"))
+            print("{:<30s}{:>20s}".format("NEXT BUY/VOL/1-5X:", "None"))
+        print()
     except:
         print("Unexpected Error!!")
         print('-'*60)
