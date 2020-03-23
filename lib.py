@@ -76,9 +76,9 @@ def show_balance():
         #print(out_json)
         bal_xbt = Decimal(out_json['result']['XXBT'])
         bal_usd = Decimal(out_json['result']['ZUSD'])
-        print("{:<30s}{:>20s}".format("ACCOUNT BALANCE:", "VOL"))
-        print("{:<30s}{:>20.8f}".format("BTC", bal_xbt))
-        print("{:<30s}{:>20.8f}".format("USD", bal_usd))
+        print("{:<20s}{:>15s}".format("ACCOUNT BALANCE:", "VOL"))
+        print("{:<20s}{:>15.8f}".format("BTC", bal_xbt))
+        print("{:<20s}{:>15.8f}".format("USD", bal_usd))
         #print()
     except:
         print("Unexpected Error!!")
@@ -103,8 +103,8 @@ def show_trade_balance():
         except:
             margin_level = "N/A"
         print("OPEN TRADE BALANCE:")
-        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("TOTAL ASSET (USD)", "", "", "TOTAL COST", "TOTAL MARGIN", "MARGIN LEVEL", "PNL"))
-        print("{:<25.8f}{:>5s}{:>20s}{:>20.8f}{:>20.8f}{:>20s}{:>10.2f}".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
+        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("TOTAL ASSET (USD)", "", "", "TOTAL COST", "TOTAL MARGIN", "MARGIN LEVEL", "PNL"))
+        print("{:<20.8f}{:>15s}{:>15s}{:>15.8f}{:>15.8f}{:>15s}{:>15.2f}".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
         #print()
     except:
         print("Unexpected Error!!")
@@ -138,8 +138,8 @@ def get_ticker():
 
 def show_ticker(ticker):
     try:
-        print("{:<30s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}".format("TICKER:", "PRICE", "ASK", "BID", "WEIGHTED AVE", "HIGH", "LOW"))
-        print("{:<30s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}".format("", ticker['price'], ticker['ask'], ticker['bid'], ticker['ave'], ticker['high'], ticker['low']))
+        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("TICKER:", "PRICE", "ASK", "BID", "WEIGHTED AVE", "HIGH", "LOW"))
+        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("", ticker['price'], ticker['ask'], ticker['bid'], ticker['ave'], ticker['high'], ticker['low']))
         print()
     except:
         print("Unexpected Error!!")
@@ -187,9 +187,9 @@ def show_ticker_and_depth():
         ticker_p = Decimal(out_json['result']['XXBTZUSD']['c'][0])
         ticker_v = Decimal(out_json['result']['XXBTZUSD']['c'][1])
         print("TICKER AND DEPTH")
-        print("{:<20s}{:>20.0f}{:>20.0f}".format("ASKS/WALL:", asks_ave, asks_vol))
-        print("{:<20s}{:>20.0f}{:>10.0f}{:>10.0f}".format("TICKER/SPREADS:", ticker_p, asks_ave-ticker_p, ticker_p-bids_ave))
-        print("{:<20s}{:>20.0f}{:>20.0f}".format("BIDS/WALL:", bids_ave, bids_vol))
+        print("{:<20s}{:>15.0f}{:>15.0f}".format("ASKS/WALL:", asks_ave, asks_vol))
+        print("{:<20s}{:>15.0f}{:>10.0f}{:>10.0f}".format("TICKER/SPREADS:", ticker_p, asks_ave-ticker_p, ticker_p-bids_ave))
+        print("{:<20s}{:>15.0f}{:>15.0f}".format("BIDS/WALL:", bids_ave, bids_vol))
         #print()
     except:
         print("Unexpected Error!!")
@@ -268,9 +268,9 @@ def get_pos_vol(pos_v):
 #def show_pos(pos_v):
 #    try:
 #        print("OPEN POSITIONS:")
-#        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}".format("ORDERID", "TYPE", "COST", "VOL", "PNL"))
+#        print("{:<25s}{:>5s}{:>15s}{:>15s}{:>15s}".format("ORDERID", "TYPE", "COST", "VOL", "PNL"))
 #        for i in pos_v:
-#            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.2f}".format(i['ordertxid'], i['type'], Decimal(i['cost']), Decimal(i['vol']) - Decimal(i['vol_closed']), Decimal(i['net'])))
+#            print("{:<25s}{:>5s}{:>15.8f}{:>15.8f}{:>15.2f}".format(i['ordertxid'], i['type'], Decimal(i['cost']), Decimal(i['vol']) - Decimal(i['vol_closed']), Decimal(i['net'])))
 #            # beep sound
 #            #print("\a")
 #    except:
@@ -303,9 +303,9 @@ def show_pos(pos_v):
                 
         tot = None
         print("GROUPED OPEN POSITIONS:")
-        print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
         for v in dist.values():
-            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.8f}{:>10.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']) / (Decimal(v['vol']) - Decimal(v['vol_closed'])), Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
+            print("{:<20s}{:>15s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']) / (Decimal(v['vol']) - Decimal(v['vol_closed'])), Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
             # beep sound
             #print("\a"
             if (tot is None):
@@ -321,8 +321,8 @@ def show_pos(pos_v):
 
         if (tot is not None):
             print("SUM:")
-            print("{:<25s}{:>5s}{:>20s}{:>20s}{:>20s}{:>20s}{:>10s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
-            print("{:<25s}{:>5s}{:>20.8f}{:>20.8f}{:>20.8f}{:>20.8f}{:>10.2f}".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
+            print("{:<20s}{:>5s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+            print("{:<20s}{:>5s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
         #print()
     except:
         print("Unexpected Error!!")
@@ -381,8 +381,8 @@ def show_next_sell(order):
 def show_next_open(order):
     try:
         if (order != None):
-            print("{:<30s}{:>20s}{:>20s}{:>20s}".format("NEXT " + order['descr']['type'].upper() + " ORDER:", "PRICE" ,"VOL", "LEV"))
-            print("{:<30s}{:>20s}{:>20s}{:>20s}".format("", order['descr']['price'], order['vol'], order['descr']['leverage']))
+            print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT " + order['descr']['type'].upper() + " ORDER:", "PRICE" ,"VOL", "LEV"))
+            print("{:<20s}{:>15s}{:>15s}{:>15s}".format("", order['descr']['price'], order['vol'], order['descr']['leverage']))
         #print()
     except:
         print("Unexpected Error!!")
@@ -415,8 +415,8 @@ def show_total_sell(vol):
 def show_total_open(vol, order_type):
     try:
         if (vol != None):
-            print("{:<30s}{:>20s}{:>20s}".format("TOTAL " + order_type.upper() + " ORDER:", "", "VOL"))
-            print("{:<30s}{:>20s}{:>20.8f}".format("", "", vol))
+            print("{:<20s}{:>15s}{:>15s}".format("TOTAL " + order_type.upper() + " ORDER:", "", "VOL"))
+            print("{:<20s}{:>15s}{:>15.8f}".format("", "", vol))
         #print()
     except:
         print("Unexpected Error!!")
