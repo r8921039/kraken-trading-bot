@@ -31,19 +31,15 @@ print()
 print("{:<30s}{:>20.0f}".format("SELL PRICE", SELL_PRICE))
 print("{:<30s}{:>20.0f}".format("SELL STEP", SELL_STEP))
 print("{:<30s}{:>20.0f}".format("BUY  PRICE", BUY_PRICE))
-print("{:<30s}{:>20.0f}".format("BUY  STEP", BUY_PRICE))
-    if (order_count > 1):
-        print("{:<30s}{:>20.0f}".format("count", order_count))
-        print("{:<30s}{:>20.8f}".format("volume", order_vol))
-        #print("{:<30s}{:>20s}".format("leverage", leverage))
+print("{:<30s}{:>20.0f}".format("BUY  STEP", BUY_STEP))
+print("{:<30s}{:>20.0f}".format("TOTAL ORDER VOL", TOTAL_ORDER_VOLUME))
+print()
+print("Press <enter> to continue or 'n' to cancel (y/n)?")
 yn = sys.stdin.read(1)
 if (yn == 'n' or yn == 'N'):
-sys.exit()
+    sys.exit()
 else:
-### WARNING!!! it fails between 701000 and 702000, likely too big a number
-add_orders(order_type, start_price, step_price, order_count, order_vol, leverage, dry_run)
-
-
+    os.system('clear')
 
 #
 # main

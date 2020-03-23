@@ -50,7 +50,7 @@ print("{:<30s}{:>20.8f}".format("volume", order_vol))
 if (dry_run):
     print("{:<30s}{:>20s}".format("dry run", str(dry_run)))
 print()
-print("press <enter> to continue or 'n' to cancel (y/n)?") 
+print("Press <enter> to continue or 'n' to cancel (y/n)?") 
 yn = sys.stdin.read(1)
 if (yn == 'n' or yn == 'N'):
     sys.exit()
