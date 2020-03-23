@@ -3,45 +3,40 @@
 from lib import *
 
 #
-# main
+# ticker
+#
+ticker = get_ticker()
+show_ticker(ticker)
+
+#
+# open orders
+#
+ol = get_open_orders()
+
+# sell
+sell_n = get_next_sell(ol)
+show_next_sell(sell_n)
+
+sell_t = get_total_sell(ol)
+show_total_sell(sell_t)
+
+# buy
+buy_n = get_next_buy(ol)
+show_next_buy(buy_n)
+
+buy_t = get_total_buy(ol)
+show_total_buy(buy_t)
+
+#
+# open positions
 #
 
-while True:
-    if (first_time):
-        first_time = False
-    else:
-        for i in range(1, 60):
-            time.sleep(1)
-            print(".", end =" ", flush=True)
-        print("")
-        #os.system('clear')
-    print('='*60)
-    print("KRAKEN TRADING BOT %s" % datetime.datetime.strptime(time.ctime(), "%a %b %d %H:%M:%S %Y"))
-    print('='*60)
+pos = get_pos()
+show_pos(pos)
 
-    #
-    # get balance
-    #
-    get_balance()
+#
+# balance
+#
 
-    #
-    # get ticker and depth
-    #
-    get_ticker_and_depth()
-
-    #
-    # get active/open positions 
-    #
-    #show_open_positions(get_open_positions())
-
-    #
-    # get active/open positions
-    #
-    get_trade_balance()
-
-    #
-    # get open orders 
-    #
-    get_open_orders()
-
- 
+show_trade_balance()
+show_balance()
