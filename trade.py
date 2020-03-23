@@ -24,7 +24,7 @@ if (len(sys.argv) > 2):
     order_vol = float(sys.argv[2])
 
 if (len(sys.argv) > 3):
-    step_price = abs(int(sys.argv[3]))
+    step_price = 0 - abs(int(sys.argv[3]))
 
 if (len(sys.argv) > 4):
     order_count = int(sys.argv[4])
@@ -33,10 +33,7 @@ if (len(sys.argv) > 5):
     dry_run = bool(sys.argv[5])
 
 order_type = sys.argv[0].split('/')[-1].split('.py')[0]
-    # nada
-if (order_type == "buy"):
-    step_price = 0 - step_price
-elif (order_type != "sell"):
+if (order_type != "buy" and order_type != "sell"):
     print("ERROR! Must be executed thru sell.py/buy.py. Exit!")
     sys.exit()
 print()
@@ -44,7 +41,7 @@ print("args: <start_price> <order_volume> <step_price> <order_count> <dry_run>")
 print()
 print("{:<30s}{:>20s}".format("order type", order_type))
 print("{:<30s}{:>20.0f}".format("start price", start_price))
-if (step_price > 0):
+if (step_price < 0):
     print("{:<30s}{:>20.0f}".format("step price", step_price))
 if (order_count > 1):
     print("{:<30s}{:>20.0f}".format("count", order_count))

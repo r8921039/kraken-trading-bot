@@ -10,6 +10,41 @@ TOTAL_ORDER_VOLUME = 60
 LEVERAGE = "5:1"
 REFRESH_TIME = 30
 
+if (len(sys.argv) > 1):
+    SELL_PRICE = int(sys.argv[1])
+
+if (len(sys.argv) > 2):
+    SELL_STEP = abs(int(sys.argv[2]))
+
+if (len(sys.argv) > 3):
+    BUY_PRICE = int(sys.argv[3])
+
+if (len(sys.argv) > 4):
+    BUY_STEP = abs(int(sys.argv[4]))
+
+if (len(sys.argv) > 5):
+    TOTAL_ORDER_VOLUME = int(sys.argv[5])
+
+print()
+print("args: <sell_price> <sell_step> <buy_price> <buy_step> <total_order_volume>")
+print()
+print("{:<30s}{:>20.0f}".format("SELL PRICE", SELL_PRICE))
+print("{:<30s}{:>20.0f}".format("SELL STEP", SELL_STEP))
+print("{:<30s}{:>20.0f}".format("BUY  PRICE", BUY_PRICE))
+print("{:<30s}{:>20.0f}".format("BUY  STEP", BUY_PRICE))
+    if (order_count > 1):
+        print("{:<30s}{:>20.0f}".format("count", order_count))
+        print("{:<30s}{:>20.8f}".format("volume", order_vol))
+        #print("{:<30s}{:>20s}".format("leverage", leverage))
+yn = sys.stdin.read(1)
+if (yn == 'n' or yn == 'N'):
+sys.exit()
+else:
+### WARNING!!! it fails between 701000 and 702000, likely too big a number
+add_orders(order_type, start_price, step_price, order_count, order_vol, leverage, dry_run)
+
+
+
 #
 # main
 #
