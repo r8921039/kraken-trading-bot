@@ -4,6 +4,7 @@
 #date -r 1584214882
 #date -j -f "%Y %j %H %M %S" "2020 12 15 00 00 00" "+%s"
 
+import copy
 import datetime
 from decimal import Decimal 
 import json
@@ -139,7 +140,7 @@ def show_ticker(ticker):
     try:
         print("{:<30s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}".format("TICKER:", "PRICE", "ASK", "BID", "WEIGHTED AVE", "HIGH", "LOW"))
         print("{:<30s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}{:>20s}".format("", ticker['price'], ticker['ask'], ticker['bid'], ticker['ave'], ticker['high'], ticker['low']))
-        #print()
+        print()
     except:
         print("Unexpected Error!!")
         print('-'*60)
@@ -200,27 +201,24 @@ def show_ticker_and_depth():
 # open positions
 #
 
-def same_pos(pos_v, pos_v2):
+def same_pos(pos_v, pos2_v):
     try:
-        if (pos_v == None and pos_v2 != None):
+        if (pos_v == None and pos2_v != None):
             return False
-        if (pos_v != None and pos_v2 == None):
+        if (pos_v != None and pos2_v == None):
             return False
-        if (pos_v == None and pos_v2 == None):
+
+        if (pos_v == None and pos2_v == None):
             return True
 
-        j = 0
-        for i in pos_v:
-            if (i['type'] != pos_v2[j]['type']):
-                return False
-            if (i['vol'] != pos_v2[j]['vol']):
-                return False
-            if (i['vol_closed'] != pos_v2[j]['vol_closed']):
-                return False
-            if (i['margin'] != pos_v2[j]['margin']):
-                return False
-            j += 1
-        return True
+        pos_vol, pos_type = get_pos_vol(pos_v)
+        pos2_vol, pos2_type = get_pos_vol(pos2_v)
+
+        if (pos_type == pos2_type and pos_vol == pos2_vol):
+            return True
+        else:
+            print("Warn!! 2 pos NOT the same: " + str(pos_type) + ":" + str(pos_vol) + " v.s. " + str(pos2_type) + ":" + str(pos2_vol))
+            return False
     except:
         print("Unexpected Error!!")
         print('-'*60)
@@ -248,8 +246,8 @@ def get_pos_vol(pos_v):
         pos_vol = Decimal(0)
         pos_type = None
         for i in pos_v:
-            if (i['margin'] > 0):
-                pos_vol = pos_vol + Decimal(i['vol']) - Decimal(i['vol_closed'])
+            if (Decimal(i['margin']) > 0):
+                pos_vol += Decimal(i['vol']) - Decimal(i['vol_closed'])
                 if (pos_type == None):
                     pos_type = i['type']
                 elif (pos_type != i['type']):
@@ -284,19 +282,20 @@ def get_pos_vol(pos_v):
 # show grouped/aggregated cost/vol with the same order id and show 
 def show_pos(pos_v):
     try:
+        pos_copy = copy.deepcopy(pos_v)
         dist = {}
-        for v in pos_v:
+        for v in pos_copy:
             #print("DIST {}".format(dist))
             if (v['ordertxid'] in dist):
                 #print("FOUND IN DIST {}".format(v['ordertxid']))
                 dist_v = dist[v['ordertxid']]
-                dist_v['cost'] = Decimal(dist_v['cost']) + Decimal(v['cost'])
-                dist_v['vol'] = Decimal(dist_v['vol']) + Decimal(v['vol'])
-                dist_v['vol_closed'] = Decimal(dist_v['vol_closed']) + Decimal(v['vol_closed'])
-                dist_v['fee'] = Decimal(dist_v['fee']) + Decimal(v['fee'])
-                dist_v['value'] = Decimal(dist_v['value']) + Decimal(v['value'])
-                dist_v['margin'] = Decimal(dist_v['margin']) + Decimal(v['margin'])
-                dist_v['net'] = Decimal(dist_v['net']) + Decimal(v['net'])
+                dist_v['cost'] = str(Decimal(dist_v['cost']) + Decimal(v['cost']))
+                dist_v['vol'] = str(Decimal(dist_v['vol']) + Decimal(v['vol']))
+                dist_v['vol_closed'] = str(Decimal(dist_v['vol_closed']) + Decimal(v['vol_closed']))
+                dist_v['fee'] = str(Decimal(dist_v['fee']) + Decimal(v['fee']))
+                dist_v['value'] = str(Decimal(dist_v['value']) + Decimal(v['value']))
+                dist_v['margin'] = str(Decimal(dist_v['margin']) + Decimal(v['margin']))
+                dist_v['net'] = str(Decimal(dist_v['net']) + Decimal(v['net']))
                 dist[v['ordertxid']] = dist_v
             else:
                 #print("NOT FOUND IN DIST {}".format(v['ordertxid']))
@@ -312,13 +311,13 @@ def show_pos(pos_v):
             if (tot is None):
                 tot = v
             else:
-                tot['cost'] = Decimal(tot['cost']) + Decimal(v['cost'])
-                tot['vol'] = Decimal(tot['vol']) + Decimal(v['vol'])
-                tot['vol_closed'] = Decimal(tot['vol_closed']) + Decimal(v['vol_closed'])
-                tot['fee'] = Decimal(tot['fee']) + Decimal(v['fee'])
-                tot['value'] = Decimal(tot['value']) + Decimal(v['value'])
-                tot['margin'] = Decimal(tot['margin']) + Decimal(v['margin'])
-                tot['net'] = Decimal(tot['net']) + Decimal(v['net'])
+                tot['cost'] = str(Decimal(tot['cost']) + Decimal(v['cost']))
+                tot['vol'] = str(Decimal(tot['vol']) + Decimal(v['vol']))
+                tot['vol_closed'] = str(Decimal(tot['vol_closed']) + Decimal(v['vol_closed']))
+                tot['fee'] = str(Decimal(tot['fee']) + Decimal(v['fee']))
+                tot['value'] = str(Decimal(tot['value']) + Decimal(v['value']))
+                tot['margin'] = str(Decimal(tot['margin']) + Decimal(v['margin']))
+                tot['net'] = str(Decimal(tot['net']) + Decimal(v['net']))
 
         if (tot is not None):
             print("SUM:")
