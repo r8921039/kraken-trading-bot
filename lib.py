@@ -126,8 +126,8 @@ def get_ticker():
         ticker["ave"] = out_json['result']['XXBTZUSD']['p'][1]
         ticker["ask"] = out_json['result']['XXBTZUSD']['a'][0]
         ticker["bid"] = out_json['result']['XXBTZUSD']['b'][0]
-        ticker["high"] = out_json['result']['XXBTZUSD']['h'][0]
-        ticker["low"] = out_json['result']['XXBTZUSD']['l'][0]
+        ticker["high"] = out_json['result']['XXBTZUSD']['h'][1]
+        ticker["low"] = out_json['result']['XXBTZUSD']['l'][1]
         #print(ticker)
         return ticker
     except:

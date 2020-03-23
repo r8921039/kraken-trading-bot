@@ -3,12 +3,12 @@
 from lib import *
 
 SELL_PRICE = 6100
-SELL_STEP = 30
+SELL_STEP = 60
 BUY_PRICE = 5900
 BUY_STEP = 100
 TOTAL_ORDER_VOLUME = 60
 LEVERAGE = "5:1"
-REFRESH_TIME = 60
+REFRESH_TIME = 30
 
 #
 # main
@@ -73,12 +73,15 @@ while True:
     pos2_vol, pos2_type = get_pos_vol(pos2)
     
     if (not same_pos(pos, pos2)):
-        print("WARN!! Position change detected. Abort for now and will try again later!")
+        print("WARN!! Position inconsistent! Better double check!")
         continue
     
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
     if (delta_sell_vol < 0):
         print("ERROR!! Open sell order volume > open positions! Abort!!")
+        print("{:<30s}{:>20.8f}".format("Total open position volume", pos_vol))
+        print("{:<30s}{:>20.8f}".format("Total open sell order volume", tot_sell))
+        print("{:<30s}{:>20.8f}".format("Delta", delta_sell_vol))
         sys.exit()
     
     # with open positions
@@ -119,17 +122,18 @@ while True:
         else:
             base_price = Decimal(next_buy['descr']['price']) + Decimal(BUY_STEP)
     
-        if (Decimal(curr_price) > Decimal(base_price)):
+        if (Decimal(curr_price) > Decimal(base_price) + Decimal(BUY_STEP)):
             order_price = Decimal(base_price)
-        else:
-            order_price = Decimal(curr_price) - Decimal(BUY_STEP)
+            add_orders("buy", order_price, 0, 1, order_vol, LEVERAGE, False)
+        #else:
+        #    print("INFO!! Current price is too close. Skip this time.")
+        #    order_price = Decimal(curr_price) - Decimal(BUY_STEP)
     
-        add_orders("buy", order_price, 0, 1, order_vol, LEVERAGE, False)
      
     
     #
     # balance
     #
     
-    #show_trade_balance()
+    show_trade_balance()
     show_balance()
