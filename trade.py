@@ -39,14 +39,19 @@ if (order_type == "buy"):
 elif (order_type != "sell"):
     print("ERROR! Must be executed thru sell.py/buy.py. Exit!")
     sys.exit()
-
+print()
+print("args: <start_price> <order_volume> <step_price> <order_count> <dry_run>")
+print()
 print("{:<30s}{:>20s}".format("order type", order_type))
 print("{:<30s}{:>20.0f}".format("start price", start_price))
-print("{:<30s}{:>20.0f}".format("step price", step_price))
-print("{:<30s}{:>20.0f}".format("count", order_count))
+if (step_price > 0):
+    print("{:<30s}{:>20.0f}".format("step price", step_price))
+if (order_count > 1):
+    print("{:<30s}{:>20.0f}".format("count", order_count))
 print("{:<30s}{:>20.8f}".format("volume", order_vol))
-print("{:<30s}{:>20s}".format("leverage", leverage))
-print("{:<30s}{:>20s}".format("dry run", str(dry_run)))
+#print("{:<30s}{:>20s}".format("leverage", leverage))
+if (dry_run):
+    print("{:<30s}{:>20s}".format("dry run", str(dry_run)))
 print()
 print("press <enter> to continue or 'n' to cancel (y/n)?") 
 yn = sys.stdin.read(1)
