@@ -34,7 +34,7 @@ if (len(sys.argv) > 5):
 
 order_type = sys.argv[0].split('/')[-1].split('.py')[0]
 if (order_type != "buy" and order_type != "sell"):
-    print("ERROR! Must be executed thru sell.py/buy.py. Exit!")
+    print("\033[91mERROR! Must be executed thru sell.py/buy.py. Abort!\033[00m")
     sys.exit()
 print()
 print("args: <start_price> <order_volume> <step_price> <order_count> <dry_run>")
@@ -55,7 +55,7 @@ yn = sys.stdin.read(1)
 if (yn == 'n' or yn == 'N'):
     sys.exit()
 else:
-    ### WARNING!!! it fails between 701000 and 702000, likely too big a number
+    ### CAUTION!!! it fails between 701000 and 702000, likely too big a number
     add_orders(order_type, start_price, step_price, order_count, order_vol, leverage, dry_run) 
 
 os.system("clikraken ol | grep {}".format(order_type))

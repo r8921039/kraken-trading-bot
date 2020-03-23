@@ -76,12 +76,12 @@ def show_balance():
         #print(out_json)
         bal_xbt = Decimal(out_json['result']['XXBT'])
         bal_usd = Decimal(out_json['result']['ZUSD'])
-        print("{:<20s}{:>15s}".format("ACCOUNT BALANCE:", "VOL"))
-        print("{:<20s}{:>15.8f}".format("BTC", bal_xbt))
-        print("{:<20s}{:>15.8f}".format("USD", bal_usd))
+        print("\033[96m{:<20s}{:>15s}\033[00m".format("ACCOUNT BALANCE:", "VOL"))
+        print("\033[96m{:<20s}{:>15.8f}\033[00m".format("BTC", bal_xbt))
+        print("\033[96m{:<20s}{:>15.8f}\033[00m".format("USD", bal_usd))
         #print()
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -102,12 +102,12 @@ def show_trade_balance():
             margin_level = out_json['result']['ml']
         except:
             margin_level = "N/A"
-        print("OPEN TRADE BALANCE:")
-        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("TOTAL ASSET (USD)", "", "", "TOTAL COST", "TOTAL MARGIN", "MARGIN LEVEL", "PNL"))
-        print("{:<20.8f}{:>15s}{:>15s}{:>15.8f}{:>15.8f}{:>15s}{:>15.2f}".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
+        print("\033[35mOPEN TRADE BALANCE:\033[00m")
+        print("\033[35m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("TOTAL ASSET (USD)", "", "", "TOTAL COST", "TOTAL MARGIN", "MARGIN LEVEL", "PNL"))
+        print("\033[35m{:<20.8f}{:>15s}{:>15s}{:>15.8f}{:>15.8f}{:>15s}{:>15.2f}\033[00m".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
         #print()
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -131,18 +131,18 @@ def get_ticker():
         #print(ticker)
         return ticker
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
 
 def show_ticker(ticker):
     try:
-        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("TICKER:", "PRICE", "ASK", "BID", "WEIGHTED AVE", "HIGH", "LOW"))
-        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("", ticker['price'], ticker['ask'], ticker['bid'], ticker['ave'], ticker['high'], ticker['low']))
+        print("\033[96m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("TICKER:", "PRICE", "ASK", "BID", "WEIGHTED AVE", "HIGH", "LOW"))
+        print("\033[96m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("", ticker['price'], ticker['ask'], ticker['bid'], ticker['ave'], ticker['high'], ticker['low']))
         print()
     except:
-        print("Unexpected Error!!")
+        print("\033[91m\033[91mUnexpected Error!!\033[00m\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
 
@@ -172,7 +172,7 @@ def show_ticker_and_depth():
             bids_vol += Decimal(i[1])
         bids_ave /= bids_vol
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -192,7 +192,7 @@ def show_ticker_and_depth():
         print("{:<20s}{:>15.0f}{:>15.0f}".format("BIDS/WALL:", bids_ave, bids_vol))
         #print()
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -220,7 +220,7 @@ def same_pos(pos_v, pos2_v):
             print("Warn!! 2 pos NOT the same: " + str(pos_type) + ":" + str(pos_vol) + " v.s. " + str(pos2_type) + ":" + str(pos2_vol))
             return False
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -236,7 +236,7 @@ def get_pos():
         pos_v = list(out_json['result'].values())
         return pos_v
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -258,7 +258,7 @@ def get_pos_vol(pos_v):
                 print(i)
         return pos_vol, pos_type
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -274,7 +274,7 @@ def get_pos_vol(pos_v):
 #            # beep sound
 #            #print("\a")
 #    except:
-#        print("Unexpected Error!!")
+#        print("\033[91mUnexpected Error!!\033[00m")
 #        print('-'*60)
 #        traceback.print_exc(file=sys.stdout)
 #        print('-'*60)
@@ -302,10 +302,10 @@ def show_pos(pos_v):
                 dist[v['ordertxid']] = v
                 
         tot = None
-        print("GROUPED OPEN POSITIONS:")
-        print("{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+        print("\033[36mGROUPED OPEN POSITIONS:\033[00m")
+        print("\033[36m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
         for v in dist.values():
-            print("{:<20s}{:>15s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}".format(v['ordertxid'], v['type'], Decimal(v['cost']) / (Decimal(v['vol']) - Decimal(v['vol_closed'])), Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
+            print("\033[96m{:<20s}{:>15s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format(v['ordertxid'], v['type'], Decimal(v['cost']) / (Decimal(v['vol']) - Decimal(v['vol_closed'])), Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
             # beep sound
             #print("\a"
             if (tot is None):
@@ -320,12 +320,12 @@ def show_pos(pos_v):
                 tot['net'] = str(Decimal(tot['net']) + Decimal(v['net']))
 
         if (tot is not None):
-            print("SUM:")
-            print("{:<20s}{:>5s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
-            print("{:<20s}{:>5s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
+            print("\033[36mSUM:\033[00m")
+            print("\033[36m{:<20s}{:>5s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+            print("\033[96m{:<20s}{:>5s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
         #print()
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -345,7 +345,7 @@ def get_open_orders():
         ol_v = list(out_json['result']['open'].values())
         return ol_v
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -369,7 +369,7 @@ def get_next_open(open_orders, order_type):
                     order = i
         return order
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -381,11 +381,16 @@ def show_next_sell(order):
 def show_next_open(order):
     try:
         if (order != None):
-            print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT " + order['descr']['type'].upper() + " ORDER:", "PRICE" ,"VOL", "LEV"))
+            if (order['descr']['type'] == "buy"):
+                print("\033[32m")
+            else:
+                print("\033[31m")
+            print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT ORDER " + order['descr']['type'].upper() + ":", "PRICE" ,"VOL", "LEV"))
             print("{:<20s}{:>15s}{:>15s}{:>15s}".format("", order['descr']['price'], order['vol'], order['descr']['leverage']))
+            print("\033[30m")
         #print()
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -403,7 +408,7 @@ def get_total_open(open_orders, order_type):
                     vol = vol + Decimal(i['vol'])
         return vol
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
@@ -414,12 +419,12 @@ def show_total_sell(vol):
     show_total_open(vol, "sell")
 def show_total_open(vol, order_type):
     try:
+        print("\033[33m{:<20s}{:>15s}{:>15s}\033[00m".format("TOTAL " + order_type.upper() + " ORDER:", "", "VOL"))
         if (vol != None):
-            print("{:<20s}{:>15s}{:>15s}".format("TOTAL " + order_type.upper() + " ORDER:", "", "VOL"))
-            print("{:<20s}{:>15s}{:>15.8f}".format("", "", vol))
+            print("\033[33m{:<20s}{:>15s}{:>15.8f}\033[00m".format("", "", vol))
         #print()
     except:
-        print("Unexpected Error!!")
+        print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)

@@ -104,15 +104,15 @@ while True:
     pos2_vol, pos2_type = get_pos_vol(pos2)
     
     if (not same_pos(pos, pos2)):
-        print("WARN!! Position inconsistent! Better double check!")
+        print("\033[93mWARN!! Position inconsistent! Better double check!")
         continue
     
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
     if (delta_sell_vol < 0):
-        print("ERROR!! Open sell order volume > open positions! Abort!!")
-        print("{:<30s}{:>20.8f}".format("Total open position volume", pos_vol))
-        print("{:<30s}{:>20.8f}".format("Total open sell order volume", tot_sell))
-        print("{:<30s}{:>20.8f}".format("Delta", delta_sell_vol))
+        print("\033[91mERROR!! Open sell order volume > open positions! Abort!!\033[00m")
+        print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Total open position volume", pos_vol))
+        print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Total open sell order volume", tot_sell))
+        print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Delta", delta_sell_vol))
         sys.exit()
     
     # with open positions
@@ -148,7 +148,7 @@ while True:
         # determine new buy price
         if (next_buy == None):
             #base_price = BUY_PRICE
-            print("WARN!! No buy order detected. Almost impossible!! Abort!!")
+            print("\033[93mWARN!! No buy order detected. Almost impossible!! Abort!!\033[00m")
             sys.exit()
         else:
             base_price = Decimal(next_buy['descr']['price']) + Decimal(BUY_STEP)
@@ -157,14 +157,17 @@ while True:
             order_price = Decimal(base_price)
             add_orders("buy", order_price, 0, 1, order_vol, LEVERAGE, False)
         #else:
-        #    print("INFO!! Current price is too close. Skip this time.")
+        #    print("\033[93mINFO!! Current price is too close. Skip this time!\033[00m")
         #    order_price = Decimal(curr_price) - Decimal(BUY_STEP)
     
      
     
     #
-    # balance
+    # show pos and balance
     #
     
+    show_pos(pos)
+    print()
     show_trade_balance()
+    print()
     show_balance()
