@@ -33,7 +33,7 @@ def delete_order(key, val = None):
         if (val != None):
             print("DELETED ORDER: %s %s %s %s" % (key, val['descr']['type'], val['descr']['price'], Decimal(val['vol']) - Decimal(val['vol_exec'])))
         else:
-            print("DELETED ORDER: %s %s %s $s" % (key, "Unknown", "Unknown", "Unknown"))
+            print("DELETED ORDER: %s %s %s %s" % (key, "Unknown", "Unknown", "Unknown"))
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)

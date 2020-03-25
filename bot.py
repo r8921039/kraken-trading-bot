@@ -73,6 +73,8 @@ while True:
     #
     
     pos = get_pos()
+    if (pos == None):
+        continue
     #show_pos(pos)
     pos_vol, pos_type = get_pos_vol(pos)
     
@@ -112,6 +114,8 @@ while True:
     
     pos2 = get_pos()
     #show_pos(pos2)
+    if (pos2 == None):
+        continue
     pos2_vol, pos2_type = get_pos_vol(pos2)
     
     if (not same_pos(pos, pos2)):
@@ -130,14 +134,16 @@ while True:
         #tmp_price = round(Decimal(next_sell_v['descr']['price']) + Decimal(curr_price) / 2)
         tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
         tmp_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
-        delete_order(next_sell_k, next_sell_v)
-        add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
+        #delete_order(next_sell_k, next_sell_v)
+        #add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
+        print("\033[91mINFO!! Proposed new sell_price/sell_vol %s %s \033[00m" % (tmp_price, tmp_vol))
         continue
     if (next_sell_v == None and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_time and round(Decimal(curr_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
         print("\033[91mINFO!! Raise next sell/buy price!!!\033[00m")
-        buy_price = round(Decimal(curr_price) * Decimal(discount_rate) / buy_step) * buy_step
-        sell_price = Decimal(buy_price + 2 * buy_step)
-        tot_order_vol = Decimal(buy_price / buy_step)
+        #buy_price = round(Decimal(curr_price) * Decimal(discount_rate) / buy_step) * buy_step
+        #sell_price = Decimal(buy_price + 2 * buy_step)
+        #tot_order_vol = Decimal(buy_price / buy_step)
+        print("\033[91mINFO!! Proposed new sell_price/buy_price/tot_volume %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
         continue
 
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
