@@ -20,25 +20,46 @@ first_time = True
 #
 # order_type: buy/sell
 #
-def delete_orders(order_type):
-    cmd = subprocess.Popen(["clikraken", "--raw", "ol"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    cmd.wait()
-    out, err = cmd.communicate()
-    out_json = json.loads(out)
-    ol_k = list(out_json['result']['open'].keys())
-    ol_v = list(out_json['result']['open'].values())
-    j = 0
-    print("DELETE ORDERS:") 
-    for i in ol_v:
-        if (i['descr']['type'] == order_type):
-            print("DELETED: %s %s %s %s" % (ol_k[j], i['descr']['type'], i['descr']['price'], i['vol']))
-            cmd = subprocess.Popen(["clikraken", "--raw", "x", ol_k[j]], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            cmd.wait()
-            out, err = cmd.communicate()
-            out_json = json.loads(out)
-            print(out_json['result'])
-        j += 1
 
+# key: open order key
+# val: open order value
+def delete_order(key, val = None):
+    try:
+        cmd = subprocess.Popen(["clikraken", "--raw", "x", key], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        cmd.wait()
+        out, err = cmd.communicate()
+        out_json = json.loads(out)
+        print(out_json['result'])
+        if (val != None):
+            print("DELETED ORDER: %s %s %s %s" % (key, val['descr']['type'], val['descr']['price'], Decimal(val['vol']) - Decimal(val['vol_exec'])))
+        else:
+            print("DELETED ORDER: %s %s %s $s" % (key, "Unknown", "Unknown", "Unknown"))
+    except:
+        print("\033[91mUnexpected Error!!\033[00m")
+        print('-'*60)
+        traceback.print_exc(file=sys.stdout)
+        print('-'*60)
+
+def delete_orders(order_type, price = None):
+    try:
+        cmd = subprocess.Popen(["clikraken", "--raw", "ol"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        cmd.wait()
+        out, err = cmd.communicate()
+        out_json = json.loads(out)
+        ol_k = list(out_json['result']['open'].keys())
+        ol_v = list(out_json['result']['open'].values())
+        j = 0
+        print("DELETE ORDERS:") 
+        for i in ol_v:
+            if (i['descr']['type'] == order_type):
+                if (price == None or Decimal(i['descr']['price']) == Decimal(price)):
+                    delete_order(ol_k[j], i)
+            j += 1
+    except:
+        print("\033[91mUnexpected Error!!\033[00m")
+        print('-'*60)
+        traceback.print_exc(file=sys.stdout)
+        print('-'*60)
 
 #
 # order_type: buy/sell
@@ -47,24 +68,30 @@ def delete_orders(order_type):
 # step_price:
 #
 def add_orders(order_type, start_price, step_price, order_count, vol, lev, dry_run = False):
-    print("PLACE ORDER:")
-    price = Decimal(start_price)
-    for i in range(1, order_count + 1):
-        args = ["clikraken", "--raw", "p", "-t", "limit", order_type, str(vol), str(price)]
-        if (lev != None and lev != "1:1"):
-            args.append("-l")
-            args.append(lev)
-        if (dry_run == True):
-            args.append("-v")
-        cmd = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        cmd.wait()
-        out, err = cmd.communicate()
-        out_json = json.loads(out)
-        try:
-            print(out_json['result'])
-        except:
-            print(out_json)
-        price += Decimal(step_price)
+    try:
+        print("PLACE ORDER:")
+        price = Decimal(start_price)
+        for i in range(1, order_count + 1):
+            args = ["clikraken", "--raw", "p", "-t", "limit", order_type, str(vol), str(price)]
+            if (lev != None and lev != "1:1"):
+                args.append("-l")
+                args.append(lev)
+            if (dry_run == True):
+                args.append("-v")
+            cmd = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            cmd.wait()
+            out, err = cmd.communicate()
+            out_json = json.loads(out)
+            try:
+                print(out_json['result'])
+            except:
+                print(out_json)
+            price += Decimal(step_price)
+    except:
+        print("\033[91mUnexpected Error!!\033[00m")
+        print('-'*60)
+        traceback.print_exc(file=sys.stdout)
+        print('-'*60)
 
 
 def show_balance():
@@ -341,52 +368,60 @@ def get_open_orders():
         out, err = cmd.communicate()
         out_json = json.loads(out)
         #print(out_json)
-        #ol_k = list(out_json['result']['open'].keys())
+        ol_k = list(out_json['result']['open'].keys())
         ol_v = list(out_json['result']['open'].values())
-        return ol_v
+        return ol_k, ol_v
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
 
-def get_next_buy(open_orders):
-    return get_next_open(open_orders, "buy")
-def get_next_sell(open_orders):
-    return get_next_open(open_orders, "sell")
-def get_next_open(open_orders, order_type): 
+def get_next_buy(ol_k, ol_v):
+    return get_next_open(ol_k, ol_v, "buy")
+def get_next_sell(ol_k, ol_v):
+    return get_next_open(ol_k, ol_v, "sell")
+def get_next_open(ol_k, ol_v, order_type): 
     try:
         price = None
         order = None
-        for i in open_orders:
+        index = 0
+        j = 0
+        for i in ol_v:
             if (i['descr']['type'] == "buy" and i['descr']['type'] == order_type):
                 if (price == None or price < Decimal(i['descr']['price'])):
                     price = Decimal(i['descr']['price'])
                     order = i
+                    index = j
             elif (i['descr']['type'] == "sell" and i['descr']['type'] == order_type):
                 if (price == None or price > Decimal(i['descr']['price'])):
                     price = Decimal(i['descr']['price'])
                     order = i
-        return order
+                    index = j
+            j += 1
+        if (order == None):
+            return None, None
+        else:
+            return ol_k[index], order
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
 
-def show_next_buy(order):
-    show_next_open(order)
-def show_next_sell(order):
-    show_next_open(order)
-def show_next_open(order):
+def show_next_buy(order_k, order_v):
+    show_next_open(order_k, order_v)
+def show_next_sell(order_k, order_v):
+    show_next_open(order_k, order_v)
+def show_next_open(order_k, order_v):
     try:
-        if (order != None):
-            if (order['descr']['type'] == "buy"):
+        if (order_v != None):
+            if (order_v['descr']['type'] == "buy"):
                 print("\033[32m")
             else:
                 print("\033[31m")
-            print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT ORDER " + order['descr']['type'].upper() + ":", "PRICE" ,"VOL", "LEV"))
-            print("{:<20s}{:>15s}{:>15s}{:>15s}".format("", order['descr']['price'], order['vol'], order['descr']['leverage']))
+            print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT ORDER " + order_v['descr']['type'].upper() + ":", "PRICE" ,"VOL", "LEV"))
+            print("{:<20s}{:>15s}{:>15.8f}{:>15s}".format(order_k, order_v['descr']['price'], Decimal(order_v['vol']) - Decimal(order_v['vol_exec']), order_v['descr']['leverage']))
             print("\033[30m")
         #print()
     except:
@@ -405,7 +440,7 @@ def get_total_open(open_orders, order_type):
         vol = Decimal(0)
         for i in open_orders:
             if (i['descr']['type'] == order_type):
-                    vol = vol + Decimal(i['vol'])
+                    vol = vol + Decimal(i['vol']) - Decimal(i['vol_exec'])
         return vol
     except:
         print("\033[91mUnexpected Error!!\033[00m")

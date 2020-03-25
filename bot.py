@@ -2,37 +2,46 @@
     
 from lib import *
 
-SELL_PRICE = 6100
-SELL_STEP = 60
-BUY_PRICE = 5900
-BUY_STEP = 100
-TOTAL_ORDER_VOLUME = 60
-LEVERAGE = "5:1"
-REFRESH_TIME = 30
+market_mode = "bull"
+leverage = "5:1"
+refresh_time = 30
+adj_time = 3600
+discount_rate = 0.94
 
 if (len(sys.argv) > 1):
-    SELL_PRICE = int(sys.argv[1])
+    sell_price = int(sys.argv[1])
+else:
+    sell_price = 6500
 
 if (len(sys.argv) > 2):
-    SELL_STEP = abs(int(sys.argv[2]))
+    sell_step = abs(int(sys.argv[2]))
+else:
+    sell_step = 60
 
+# now relative to sell price
+#if (len(sys.argv) > 3):
+#    buy_price = int(sys.argv[3])
+#if (len(sys.argv) > 4):
+#    buy_step = abs(int(sys.argv[4]))
 if (len(sys.argv) > 3):
-    BUY_PRICE = int(sys.argv[3])
+    buy_step = int(sys.argv[3])
+else:
+    buy_step = 100
+buy_price = Decimal(sell_price - 2 * buy_step)
 
-if (len(sys.argv) > 4):
-    BUY_STEP = abs(int(sys.argv[4]))
-
-if (len(sys.argv) > 5):
-    TOTAL_ORDER_VOLUME = int(sys.argv[5])
+# now relative to sell price
+#if (len(sys.argv) > 5):
+#    tot_order_vol = int(sys.argv[5])
+tot_order_vol = Decimal(buy_price / buy_step)
 
 print()
-print("args: <sell_price> <sell_step> <buy_price> <buy_step> <total_order_volume>")
+print("args: <sell_price> <sell_step> <buy_step>")
 print()
-print("{:<30s}{:>20.0f}".format("SELL PRICE", SELL_PRICE))
-print("{:<30s}{:>20.0f}".format("SELL STEP", SELL_STEP))
-print("{:<30s}{:>20.0f}".format("BUY  PRICE", BUY_PRICE))
-print("{:<30s}{:>20.0f}".format("BUY  STEP", BUY_STEP))
-print("{:<30s}{:>20.0f}".format("TOTAL ORDER VOL", TOTAL_ORDER_VOLUME))
+print("{:<30s}{:>20.0f}".format("SELL PRICE", sell_price))
+print("{:<30s}{:>20.0f}".format("SELL STEP", sell_step))
+print("{:<30s}{:>20.0f}".format("BUY  PRICE", buy_price))
+print("{:<30s}{:>20.0f}".format("BUY  STEP", buy_step))
+print("{:<30s}{:>20.0f}".format("TOTAL ORDER VOL", tot_order_vol))
 print()
 print("Press <enter> to continue or 'n' to cancel (y/n)?")
 yn = sys.stdin.read(1)
@@ -50,7 +59,7 @@ while True:
     if (first_time):
         first_time = False
     else:
-        for i in range(1, REFRESH_TIME):
+        for i in range(1, refresh_time):
             time.sleep(1)
             print(".", end =" ", flush=True)
         print("")
@@ -71,28 +80,30 @@ while True:
     # ticker
     #
     ticker = get_ticker()
+    if (ticker == None):
+        continue
     show_ticker(ticker)
     curr_price = ticker['price']
     
     #
     # open orders
     #
-    ol = get_open_orders()
+    ol_k, ol_v = get_open_orders()
     
     # sell
-    next_sell = get_next_sell(ol)
-    show_next_sell(next_sell)
+    next_sell_k, next_sell_v = get_next_sell(ol_k, ol_v)
+    show_next_sell(next_sell_k, next_sell_v)
     
-    tot_sell = get_total_sell(ol)
+    tot_sell = get_total_sell(ol_v)
     show_total_sell(tot_sell)
    
     print()
 
     # buy
-    next_buy = get_next_buy(ol)
-    show_next_buy(next_buy)
+    next_buy_k, next_buy_v = get_next_buy(ol_k, ol_v)
+    show_next_buy(next_buy_k, next_buy_v)
     
-    tot_buy = get_total_buy(ol)
+    tot_buy = get_total_buy(ol_v)
     show_total_buy(tot_buy)
     
     #
@@ -106,16 +117,38 @@ while True:
     if (not same_pos(pos, pos2)):
         print("\033[93mWARN!! Position inconsistent! Better double check!")
         continue
-    
+   
+    # adjust total orders
+    if (Decimal(tot_buy) > tot_order_vol):
+        delete_order(next_buy_k, next_buy_v) 
+        continue
+    if (Decimal(tot_sell) > tot_order_vol):
+        delete_order(next_sell_k, next_sell_v)
+        continue
+    if (next_sell_v != None and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_time and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 2 * Decimal(sell_step)):
+        print("\033[91mINFO!! Lower next sell price!!!\033[00m")
+        #tmp_price = round(Decimal(next_sell_v['descr']['price']) + Decimal(curr_price) / 2)
+        tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
+        tmp_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
+        delete_order(next_sell_k, next_sell_v)
+        add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
+        continue
+    if (next_sell_v == None and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_time and round(Decimal(curr_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
+        print("\033[91mINFO!! Raise next sell/buy price!!!\033[00m")
+        buy_price = round(Decimal(curr_price) * Decimal(discount_rate) / buy_step) * buy_step
+        sell_price = Decimal(buy_price + 2 * buy_step)
+        tot_order_vol = Decimal(buy_price / buy_step)
+        continue
+
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
     if (delta_sell_vol < 0):
         print("\033[91mERROR!! Open sell order volume > open positions! Abort!!\033[00m")
         print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Total open position volume", pos_vol))
         print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Total open sell order volume", tot_sell))
         print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Delta", delta_sell_vol))
-        sys.exit()
-    
-    # with open positions
+        sys.exit()    
+
+    # with open positions - shall we add more sell
     if (delta_sell_vol > 0):
         # cap new sell volume
         if (delta_sell_vol > 1):
@@ -124,20 +157,21 @@ while True:
             order_vol = delta_sell_vol
     
         # determine new sell price
-        if (next_sell == None):
-            base_price = SELL_PRICE
+        if (next_sell_v == None):
+            base_price = sell_price
         else:
-            base_price = Decimal(next_sell['descr']['price']) - Decimal(SELL_STEP)
+            base_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
     
         if (Decimal(curr_price) < Decimal(base_price)):
             order_price = Decimal(base_price)
         else:
-            order_price = Decimal(curr_price) + Decimal(SELL_STEP)
+            order_price = Decimal(curr_price) + Decimal(sell_step)
     
-        add_orders("sell", order_price, 0, 1, order_vol, LEVERAGE, False)
+        add_orders("sell", order_price, 0, 1, order_vol, leverage, False)
     
-    
-    delta_buy_vol = TOTAL_ORDER_VOLUME - Decimal(tot_buy) - Decimal(pos_vol)
+
+    # with or without open positions - shall we add more buy
+    delta_buy_vol = tot_order_vol - Decimal(tot_buy) - Decimal(pos_vol)
     if (delta_buy_vol > 0):
         # cap new buy volume
         if (delta_buy_vol > 1):
@@ -146,19 +180,19 @@ while True:
             order_vol = delta_buy_vol
     
         # determine new buy price
-        if (next_buy == None):
-            #base_price = BUY_PRICE
+        if (next_buy_v == None):
+            #base_price = buy_price
             print("\033[93mWARN!! No buy order detected. Almost impossible!! Abort!!\033[00m")
             sys.exit()
         else:
-            base_price = Decimal(next_buy['descr']['price']) + Decimal(BUY_STEP)
+            base_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
     
-        if (Decimal(curr_price) > Decimal(base_price) + Decimal(BUY_STEP)):
+        if (Decimal(curr_price) > Decimal(base_price) + Decimal(buy_step)):
             order_price = Decimal(base_price)
-            add_orders("buy", order_price, 0, 1, order_vol, LEVERAGE, False)
+            add_orders("buy", order_price, 0, 1, order_vol, leverage, False)
         #else:
         #    print("\033[93mINFO!! Current price is too close. Skip this time!\033[00m")
-        #    order_price = Decimal(curr_price) - Decimal(BUY_STEP)
+        #    order_price = Decimal(curr_price) - Decimal(buy_step)
     
      
     
