@@ -86,7 +86,8 @@ while True:
         continue
     show_ticker(ticker)
     curr_price = ticker['price']
-    
+    ave_price = ticker['ave'] 
+
     #
     # open orders
     #
@@ -129,20 +130,20 @@ while True:
     if (Decimal(tot_sell) > tot_order_vol):
         delete_order(next_sell_k, next_sell_v)
         continue
-    if (next_sell_v != None and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_time and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 2 * Decimal(sell_step)):
+    if (next_sell_v != None and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_time and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) + 2 * Decimal(sell_step)):
         print("\033[91mINFO!! Lower next sell price!!!\033[00m")
-        #tmp_price = round(Decimal(next_sell_v['descr']['price']) + Decimal(curr_price) / 2)
+        #tmp_price = round(Decimal(next_sell_v['descr']['price']) + Decimal(ave_price) / 2)
         tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
         tmp_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
-        #delete_order(next_sell_k, next_sell_v)
-        #add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
+        delete_order(next_sell_k, next_sell_v)
+        add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
         print("\033[91mINFO!! Proposed new sell_price/sell_vol %s %s \033[00m" % (tmp_price, tmp_vol))
         continue
-    if (next_sell_v == None and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_time and round(Decimal(curr_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
+    if (next_sell_v == None and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_time and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
         print("\033[91mINFO!! Raise next sell/buy price!!!\033[00m")
-        #buy_price = round(Decimal(curr_price) * Decimal(discount_rate) / buy_step) * buy_step
-        #sell_price = Decimal(buy_price + 2 * buy_step)
-        #tot_order_vol = Decimal(buy_price / buy_step)
+        buy_price = round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step
+        sell_price = Decimal(buy_price + 2 * buy_step)
+        tot_order_vol = Decimal(buy_price / buy_step)
         print("\033[91mINFO!! Proposed new sell_price/buy_price/tot_volume %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
         continue
 
