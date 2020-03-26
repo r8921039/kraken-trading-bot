@@ -5,7 +5,7 @@ from lib import *
 market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
-adj_time = 3600
+adj_wait_secs = 600
 discount_rate = 0.94
 
 if (len(sys.argv) > 1):
@@ -73,7 +73,7 @@ while True:
     #
     
     pos = get_pos()
-    if (pos == None):
+    if (pos == TypeError):
         continue
     #show_pos(pos)
     pos_vol, pos_type = get_pos_vol(pos)
@@ -82,7 +82,7 @@ while True:
     # ticker
     #
     ticker = get_ticker()
-    if (ticker == None):
+    if (ticker == TypeError):
         continue
     show_ticker(ticker)
     curr_price = ticker['price']
@@ -92,7 +92,9 @@ while True:
     # open orders
     #
     ol_k, ol_v = get_open_orders()
-    
+    if (ol_k == TypeError or ol_v == TypeError):
+        continue
+
     # sell
     next_sell_k, next_sell_v = get_next_sell(ol_k, ol_v)
     show_next_sell(next_sell_k, next_sell_v)
@@ -115,7 +117,7 @@ while True:
     
     pos2 = get_pos()
     #show_pos(pos2)
-    if (pos2 == None):
+    if (pos2 == TypeError):
         continue
     pos2_vol, pos2_type = get_pos_vol(pos2)
     
@@ -130,7 +132,7 @@ while True:
     if (Decimal(tot_sell) > tot_order_vol):
         delete_order(next_sell_k, next_sell_v)
         continue
-    if (next_sell_v != None and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_time and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) + 2 * Decimal(sell_step)):
+    if (next_sell_v != None and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) + 2 * Decimal(sell_step)):
         print("\033[91mINFO!! Lower next sell price!!!\033[00m")
         #tmp_price = round(Decimal(next_sell_v['descr']['price']) + Decimal(ave_price) / 2)
         tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
@@ -139,7 +141,7 @@ while True:
         add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
         print("\033[91mINFO!! Proposed new sell_price/sell_vol %s %s \033[00m" % (tmp_price, tmp_vol))
         continue
-    if (next_sell_v == None and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_time and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
+    if (next_sell_v == None and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
         print("\033[91mINFO!! Raise next sell/buy price!!!\033[00m")
         buy_price = round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step
         sell_price = Decimal(buy_price + 2 * buy_step)

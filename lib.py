@@ -34,11 +34,13 @@ def delete_order(key, val = None):
             print("DELETED ORDER: %s %s %s %s" % (key, val['descr']['type'], val['descr']['price'], Decimal(val['vol']) - Decimal(val['vol_exec'])))
         else:
             print("DELETED ORDER: %s %s %s %s" % (key, "Unknown", "Unknown", "Unknown"))
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 def delete_orders(order_type, price = None):
     try:
@@ -55,11 +57,13 @@ def delete_orders(order_type, price = None):
                 if (price == None or Decimal(i['descr']['price']) == Decimal(price)):
                     delete_order(ol_k[j], i)
             j += 1
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 #
 # order_type: buy/sell
@@ -87,11 +91,13 @@ def add_orders(order_type, start_price, step_price, order_count, vol, lev, dry_r
             except:
                 print(out_json)
             price += Decimal(step_price)
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 
 def show_balance():
@@ -107,11 +113,13 @@ def show_balance():
         print("\033[96m{:<20s}{:>15.8f}\033[00m".format("BTC", bal_xbt))
         print("\033[96m{:<20s}{:>15.8f}\033[00m".format("USD", bal_usd))
         #print()
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 
 def show_trade_balance():
@@ -133,11 +141,13 @@ def show_trade_balance():
         print("\033[35m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("TOTAL ASSET (USD)", "", "", "TOTAL COST", "TOTAL MARGIN", "MARGIN LEVEL", "PNL"))
         print("\033[35m{:<20.8f}{:>15s}{:>15s}{:>15.8f}{:>15.8f}{:>15s}{:>15.2f}\033[00m".format(trade_balance, "", "", pos_cost, margin_used, margin_level, pos_pnl))
         #print()
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 
 def get_ticker():
@@ -162,16 +172,20 @@ def get_ticker():
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 def show_ticker(ticker):
     try:
         print("\033[96m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("TICKER:", "PRICE", "ASK", "BID", "WEIGHTED AVE", "HIGH", "LOW"))
         print("\033[96m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("", ticker['price'], ticker['ask'], ticker['bid'], ticker['ave'], ticker['high'], ticker['low']))
         print()
+        return None
     except:
         print("\033[91m\033[91mUnexpected Error!!\033[00m\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
+        print('-'*60)
+        return TypeError
 
 
 def show_ticker_and_depth():
@@ -198,11 +212,13 @@ def show_ticker_and_depth():
             bids_ave += Decimal(i[0]) * Decimal(i[1])
             bids_vol += Decimal(i[1])
         bids_ave /= bids_vol
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
     # ticker
     try:
@@ -218,11 +234,13 @@ def show_ticker_and_depth():
         print("{:<20s}{:>15.0f}{:>10.0f}{:>10.0f}".format("TICKER/SPREADS:", ticker_p, asks_ave-ticker_p, ticker_p-bids_ave))
         print("{:<20s}{:>15.0f}{:>15.0f}".format("BIDS/WALL:", bids_ave, bids_vol))
         #print()
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 #
 # open positions
@@ -251,6 +269,7 @@ def same_pos(pos_v, pos2_v):
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 def get_pos():
     try:
@@ -267,6 +286,7 @@ def get_pos():
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 def get_pos_vol(pos_v):
     try:
@@ -289,6 +309,7 @@ def get_pos_vol(pos_v):
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError, TypeError
     
 
 # comment off itemized, use grouped instead 
@@ -300,11 +321,13 @@ def get_pos_vol(pos_v):
 #            print("{:<25s}{:>5s}{:>15.8f}{:>15.8f}{:>15.2f}".format(i['ordertxid'], i['type'], Decimal(i['cost']), Decimal(i['vol']) - Decimal(i['vol_closed']), Decimal(i['net'])))
 #            # beep sound
 #            #print("\a")
+#        return None
 #    except:
 #        print("\033[91mUnexpected Error!!\033[00m")
 #        print('-'*60)
 #        traceback.print_exc(file=sys.stdout)
 #        print('-'*60)
+#        return TypeError
 
 # show grouped/aggregated cost/vol with the same order id and show 
 def show_pos(pos_v):
@@ -351,11 +374,13 @@ def show_pos(pos_v):
             print("\033[36m{:<20s}{:>5s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
             print("\033[96m{:<20s}{:>5s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
         #print()
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 #
 # open orders
@@ -376,6 +401,7 @@ def get_open_orders():
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError, TypeError
 
 def get_next_buy(ol_k, ol_v):
     return get_next_open(ol_k, ol_v, "buy")
@@ -408,6 +434,7 @@ def get_next_open(ol_k, ol_v, order_type):
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError, TypeError
 
 def show_next_buy(order_k, order_v):
     show_next_open(order_k, order_v)
@@ -424,11 +451,13 @@ def show_next_open(order_k, order_v):
             print("{:<20s}{:>15s}{:>15.8f}{:>15s}".format(order_k, order_v['descr']['price'], Decimal(order_v['vol']) - Decimal(order_v['vol_exec']), order_v['descr']['leverage']))
             print("\033[30m")
         #print()
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
         
 def get_total_buy(open_orders):
@@ -447,6 +476,7 @@ def get_total_open(open_orders, order_type):
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
 
 def show_total_buy(vol):
     show_total_open(vol, "buy")
@@ -458,8 +488,12 @@ def show_total_open(vol, order_type):
         if (vol != None):
             print("\033[33m{:<20s}{:>15s}{:>15.8f}\033[00m".format("", "", vol))
         #print()
+        return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
         print('-'*60)
         traceback.print_exc(file=sys.stdout)
         print('-'*60)
+        return TypeError
+
+
