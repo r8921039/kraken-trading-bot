@@ -371,8 +371,8 @@ def show_pos(pos_v):
 
         if (tot is not None):
             print("\033[36mSUM:\033[00m")
-            print("\033[36m{:<20s}{:>5s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
-            print("\033[96m{:<20s}{:>5s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
+            print("\033[36m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+            print("\033[96m{:<20s}{:>15s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
         #print()
         return None
     except:
