@@ -5,7 +5,7 @@ from lib import *
 market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
-adj_wait_secs = 600
+adj_wait_secs = 0
 discount_rate = 0.94
 
 if (len(sys.argv) > 1):
@@ -132,7 +132,10 @@ while True:
     if (Decimal(tot_sell) > tot_order_vol):
         delete_order(next_sell_k, next_sell_v)
         continue
-    if (next_sell_v != None and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) + 2 * Decimal(sell_step)):
+    if (next_sell_v != None 
+            and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
+            and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) 
+            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 2 * Decimal(sell_step)):
         print("\033[91mINFO!! Lower next sell price!!!\033[00m")
         #tmp_price = round(Decimal(next_sell_v['descr']['price']) + Decimal(ave_price) / 2)
         tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
@@ -141,7 +144,9 @@ while True:
         add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
         print("\033[91mINFO!! Proposed new sell_price/sell_vol %s %s \033[00m" % (tmp_price, tmp_vol))
         continue
-    if (next_sell_v == None and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
+    if (next_sell_v == None 
+            and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs 
+            and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
         print("\033[91mINFO!! Raise next sell/buy price!!!\033[00m")
         buy_price = round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step
         sell_price = Decimal(buy_price + 2 * buy_step)
