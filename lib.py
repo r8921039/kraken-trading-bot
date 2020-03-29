@@ -442,10 +442,10 @@ def show_next_sell(order_k, order_v):
 def show_next_open(order_k, order_v):
     try:
         if (order_v != None):
-            if (order_v['descr']['type'] == "buy"):
-                print("\033[32m")
-            else:
+            if (order_v['descr']['type'] == "sell"):
                 print("\033[31m")
+            else:
+                print("\033[32m")
             print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT ORDER " + order_v['descr']['type'].upper() + ":", "PRICE" ,"VOL", "LEV"))
             print("{:<20s}{:>15s}{:>15.8f}{:>15s}\033[30m".format(order_k, order_v['descr']['price'], Decimal(order_v['vol']) - Decimal(order_v['vol_exec']), order_v['descr']['leverage']))
         return None
