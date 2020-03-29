@@ -5,7 +5,7 @@ from lib import *
 market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
-adj_wait_secs = 0
+adj_wait_secs = 300
 discount_rate = 0.94
 
 if (len(sys.argv) > 1):
@@ -37,11 +37,11 @@ tot_order_vol = Decimal(buy_price / buy_step)
 print()
 print("args: <sell_price> <sell_step> <buy_step>")
 print()
-print("{:<30s}{:>20.0f}".format("SELL PRICE", sell_price))
-print("{:<30s}{:>20.0f}".format("SELL STEP", sell_step))
-print("{:<30s}{:>20.0f}".format("BUY  PRICE", buy_price))
-print("{:<30s}{:>20.0f}".format("BUY  STEP", buy_step))
-print("{:<30s}{:>20.0f}".format("TOTAL ORDER VOL", tot_order_vol))
+print("{:<20s}{:>15.0f}".format("SELL PRICE", sell_price))
+print("{:<20s}{:>15.0f}".format("SELL STEP", sell_step))
+print("{:<20s}{:>15.0f}".format("BUY  PRICE", buy_price))
+print("{:<20s}{:>15.0f}".format("BUY  STEP", buy_step))
+print("{:<20s}{:>15.0f}".format("TOTAL ORDER VOL", tot_order_vol))
 print()
 print("Press <enter> to continue or 'n' to cancel (y/n)?")
 yn = sys.stdin.read(1)
@@ -64,9 +64,10 @@ while True:
             print(".", end =" ", flush=True)
         print("")
         os.system('clear')
-    print('='*60)
+    print('='*80)
     print("KRAKEN TRADING BOT %s" % datetime.datetime.strptime(time.ctime(), "%a %b %d %H:%M:%S %Y"))
-    print('='*60)
+    print("{:<20s}{:>15.0f}{:>15.0f}".format("TARGET SELL/BUY", sell_price, buy_price))
+    print('='*80)
 
     #
     # open positions
@@ -135,23 +136,20 @@ while True:
     if (next_sell_v != None 
             and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
             and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) 
-            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 2 * Decimal(sell_step)):
-        print("\033[91mINFO!! Lower next sell price!!!\033[00m")
-        #tmp_price = round(Decimal(next_sell_v['descr']['price']) + Decimal(ave_price) / 2)
+            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 3 * Decimal(sell_step)):
         tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
         tmp_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
         delete_order(next_sell_k, next_sell_v)
         add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
-        print("\033[91mINFO!! Proposed new sell_price/sell_vol %s %s \033[00m" % (tmp_price, tmp_vol))
+        print("\033[91mINFO!! Lower next sell price/volume to %s %s \033[00m" % (tmp_price, tmp_vol))
         continue
     if (next_sell_v == None 
             and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs 
             and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
-        print("\033[91mINFO!! Raise next sell/buy price!!!\033[00m")
         buy_price = round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step
         sell_price = Decimal(buy_price + 2 * buy_step)
         tot_order_vol = Decimal(buy_price / buy_step)
-        print("\033[91mINFO!! Proposed new sell_price/buy_price/tot_volume %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
+        print("\033[91mINFO!! Higher sell_price/buy_price/tot_volume to  %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
         continue
 
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
@@ -201,7 +199,7 @@ while True:
         else:
             base_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
     
-        if (Decimal(curr_price) > Decimal(base_price) + Decimal(buy_step)):
+        if (Decimal(curr_price) > Decimal(base_price) + 2 * Decimal(buy_step)):
             order_price = Decimal(base_price)
             add_orders("buy", order_price, 0, 1, order_vol, leverage, False)
         #else:

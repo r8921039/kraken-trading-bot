@@ -178,7 +178,6 @@ def show_ticker(ticker):
     try:
         print("\033[96m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("TICKER:", "PRICE", "ASK", "BID", "WEIGHTED AVE", "HIGH", "LOW"))
         print("\033[96m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("", ticker['price'], ticker['ask'], ticker['bid'], ticker['ave'], ticker['high'], ticker['low']))
-        print()
         return None
     except:
         print("\033[91m\033[91mUnexpected Error!!\033[00m\033[00m")
@@ -356,23 +355,23 @@ def show_pos(pos_v):
         print("\033[36m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
         for v in dist.values():
             print("\033[96m{:<20s}{:>15s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format(v['ordertxid'], v['type'], Decimal(v['cost']) / (Decimal(v['vol']) - Decimal(v['vol_closed'])), Decimal(v['cost']), Decimal(v['margin']), Decimal(v['vol']) - Decimal(v['vol_closed']), Decimal(v['net'])))
-            # beep sound
-            #print("\a"
-            if (tot is None):
-                tot = v
-            else:
-                tot['cost'] = str(Decimal(tot['cost']) + Decimal(v['cost']))
-                tot['vol'] = str(Decimal(tot['vol']) + Decimal(v['vol']))
-                tot['vol_closed'] = str(Decimal(tot['vol_closed']) + Decimal(v['vol_closed']))
-                tot['fee'] = str(Decimal(tot['fee']) + Decimal(v['fee']))
-                tot['value'] = str(Decimal(tot['value']) + Decimal(v['value']))
-                tot['margin'] = str(Decimal(tot['margin']) + Decimal(v['margin']))
-                tot['net'] = str(Decimal(tot['net']) + Decimal(v['net']))
-
-        if (tot is not None):
-            print("\033[36mSUM:\033[00m")
-            print("\033[36m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
-            print("\033[96m{:<20s}{:>15s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
+#            # beep sound
+#            #print("\a"
+#            if (tot is None):
+#                tot = v
+#            else:
+#                tot['cost'] = str(Decimal(tot['cost']) + Decimal(v['cost']))
+#                tot['vol'] = str(Decimal(tot['vol']) + Decimal(v['vol']))
+#                tot['vol_closed'] = str(Decimal(tot['vol_closed']) + Decimal(v['vol_closed']))
+#                tot['fee'] = str(Decimal(tot['fee']) + Decimal(v['fee']))
+#                tot['value'] = str(Decimal(tot['value']) + Decimal(v['value']))
+#                tot['margin'] = str(Decimal(tot['margin']) + Decimal(v['margin']))
+#                tot['net'] = str(Decimal(tot['net']) + Decimal(v['net']))
+#
+#        if (tot is not None):
+#            print("\033[36mSUM:\033[00m")
+#            print("\033[36m{:<20s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}{:>15s}\033[00m".format("ORDERID", "TYPE", "AVE PRICE", "TOTAL COST", "TOTAL MARGIN", "TOTAL VOL", "PNL"))
+#            print("\033[96m{:<20s}{:>15s}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.8f}{:>15.2f}\033[00m".format("", "", Decimal(tot['cost']) / (Decimal(tot['vol']) - Decimal(tot['vol_closed'])), Decimal(tot['cost']), Decimal(tot['margin']), Decimal(tot['vol']) - Decimal(tot['vol_closed']), Decimal(tot['net'])))
         #print()
         return None
     except:
@@ -448,9 +447,7 @@ def show_next_open(order_k, order_v):
             else:
                 print("\033[31m")
             print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT ORDER " + order_v['descr']['type'].upper() + ":", "PRICE" ,"VOL", "LEV"))
-            print("{:<20s}{:>15s}{:>15.8f}{:>15s}".format(order_k, order_v['descr']['price'], Decimal(order_v['vol']) - Decimal(order_v['vol_exec']), order_v['descr']['leverage']))
-            print("\033[30m")
-        #print()
+            print("{:<20s}{:>15s}{:>15.8f}{:>15s}\033[30m".format(order_k, order_v['descr']['price'], Decimal(order_v['vol']) - Decimal(order_v['vol_exec']), order_v['descr']['leverage']))
         return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
@@ -487,7 +484,6 @@ def show_total_open(vol, order_type):
         print("\033[33m{:<20s}{:>15s}{:>15s}\033[00m".format("TOTAL " + order_type.upper() + " ORDER:", "", "VOL"))
         if (vol != None):
             print("\033[33m{:<20s}{:>15s}{:>15.8f}\033[00m".format("", "", vol))
-        #print()
         return None
     except:
         print("\033[91mUnexpected Error!!\033[00m")
