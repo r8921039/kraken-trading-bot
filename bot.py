@@ -6,7 +6,7 @@ market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
 adj_wait_secs = 300
-discount_rate = 0.94
+discount_rate = 0.92
 
 if (len(sys.argv) > 1):
     sell_price = int(sys.argv[1])
