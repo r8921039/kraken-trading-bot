@@ -9,6 +9,7 @@ adj_wait_secs = 86400
 discount_rate = 0.93
 sell_to_curr_premium = 3
 sell_to_buy_premium = 3
+curr_to_buy_premium = 2
 
 if (len(sys.argv) > 1):
     sell_price = int(sys.argv[1])
@@ -201,7 +202,7 @@ while True:
         else:
             base_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
     
-        if (Decimal(curr_price) > Decimal(base_price) + sell_to_buy_premium * Decimal(buy_step)):
+        if (Decimal(curr_price) > Decimal(base_price) + curr_to_buy_premium * Decimal(buy_step)):
             order_price = Decimal(base_price)
             add_orders("buy", order_price, 0, 1, order_vol, leverage, False)
         #else:
