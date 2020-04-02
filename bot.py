@@ -136,7 +136,7 @@ while True:
     if (next_sell_v != None 
             and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
             and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) 
-            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 3 * Decimal(sell_step)):
+            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 4 * Decimal(sell_step)):
         tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
         tmp_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
         delete_order(next_sell_k, next_sell_v)
