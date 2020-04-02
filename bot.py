@@ -5,13 +5,15 @@ from lib import *
 market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
-adj_wait_secs = 300
-discount_rate = 0.92
+adj_wait_secs = 86400
+discount_rate = 0.93
+sell_to_curr_premium = 3
+sell_to_buy_premium = 3
 
 if (len(sys.argv) > 1):
     sell_price = int(sys.argv[1])
 else:
-    sell_price = 6500
+    sell_price = 7000
 
 if (len(sys.argv) > 2):
     sell_step = abs(int(sys.argv[2]))
@@ -27,7 +29,7 @@ if (len(sys.argv) > 3):
     buy_step = int(sys.argv[3])
 else:
     buy_step = 100
-buy_price = Decimal(sell_price - 2 * buy_step)
+buy_price = Decimal(sell_price - sell_to_buy_premium * buy_step)
 
 # now relative to sell price
 #if (len(sys.argv) > 5):
@@ -136,7 +138,7 @@ while True:
     if (next_sell_v != None 
             and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
             and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) 
-            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + 4 * Decimal(sell_step)):
+            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + sell_to_curr_premium * Decimal(sell_step)):
         tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
         tmp_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
         delete_order(next_sell_k, next_sell_v)
@@ -144,10 +146,10 @@ while True:
         print("\033[91mINFO!! Lower next sell price/volume to %s %s \033[00m" % (tmp_price, tmp_vol))
         continue
     if (next_sell_v == None 
-            and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs 
+            #and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs 
             and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
         buy_price = round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step
-        sell_price = Decimal(buy_price + 2 * buy_step)
+        sell_price = Decimal(buy_price + sell_to_buy_premium * buy_step)
         tot_order_vol = Decimal(buy_price / buy_step)
         print("\033[91mINFO!! Higher sell_price/buy_price/tot_volume to  %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
         continue
@@ -199,7 +201,7 @@ while True:
         else:
             base_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
     
-        if (Decimal(curr_price) > Decimal(base_price) + 2 * Decimal(buy_step)):
+        if (Decimal(curr_price) > Decimal(base_price) + sell_to_buy_premium * Decimal(buy_step)):
             order_price = Decimal(base_price)
             add_orders("buy", order_price, 0, 1, order_vol, leverage, False)
         #else:
