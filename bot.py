@@ -11,30 +11,28 @@ sell_to_curr_premium = 3
 sell_to_buy_premium = 3
 curr_to_buy_premium = 2
 
-if (len(sys.argv) > 1):
-    sell_price = int(sys.argv[1])
+if (len(sys.argv) > 3):
+    buy_step = int(sys.argv[3])
 else:
-    sell_price = 7000
+    buy_step = 100
 
 if (len(sys.argv) > 2):
     sell_step = abs(int(sys.argv[2]))
 else:
     sell_step = 60
 
-# now relative to sell price
-#if (len(sys.argv) > 3):
-#    buy_price = int(sys.argv[3])
-#if (len(sys.argv) > 4):
-#    buy_step = abs(int(sys.argv[4]))
-if (len(sys.argv) > 3):
-    buy_step = int(sys.argv[3])
+if (len(sys.argv) > 1):
+    sell_price = int(sys.argv[1])
 else:
-    buy_step = 100
+    ticker = get_ticker()
+    if (ticker == TypeError):
+        sys.exit()
+    else:
+        #sell_price = round(Decimal(ticker['price']) / buy_step) * buy_step
+        sell_price = round(Decimal(ticker['ave']) / buy_step) * buy_step
+
 buy_price = Decimal(sell_price - sell_to_buy_premium * buy_step)
 
-# now relative to sell price
-#if (len(sys.argv) > 5):
-#    tot_order_vol = int(sys.argv[5])
 tot_order_vol = Decimal(buy_price / buy_step)
 
 print()
