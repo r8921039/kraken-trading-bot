@@ -104,7 +104,7 @@ while True:
     tot_sell = get_total_sell(ol_v)
     show_total_sell(tot_sell)
    
-    print()
+    #print()
 
     # buy
     next_buy_k, next_buy_v = get_next_buy(ol_k, ol_v)
@@ -214,7 +214,7 @@ while True:
     #
     
     show_pos(pos)
-    print()
+    #print()
     show_trade_balance()
-    print()
+    #print()
     show_balance()

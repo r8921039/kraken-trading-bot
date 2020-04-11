@@ -300,7 +300,7 @@ def get_pos_vol(pos_v):
                     print("ERROR!! Position type inconsistency detected!! Abort!!")
                     sys.exit()
             else: 
-                print("WARN!! Position with 0 margin detected. Assume okay")
+                print("\033[91mINFO!! Non-margin position detected. Continue.\033[00m")
                 print(i)
         return pos_vol, pos_type
     except:
@@ -414,15 +414,21 @@ def get_next_open(ol_k, ol_v, order_type):
         j = 0
         for i in ol_v:
             if (i['descr']['type'] == "buy" and i['descr']['type'] == order_type):
-                if (price == None or price < Decimal(i['descr']['price'])):
-                    price = Decimal(i['descr']['price'])
-                    order = i
-                    index = j
+                if (i['descr']['leverage'] == 'none'):
+                    print("\033[91mINFO!! Non-margin buy order detected. Continue.\033[00m")
+                else:
+                    if (price == None or price < Decimal(i['descr']['price'])):
+                        price = Decimal(i['descr']['price'])
+                        order = i
+                        index = j
             elif (i['descr']['type'] == "sell" and i['descr']['type'] == order_type):
-                if (price == None or price > Decimal(i['descr']['price'])):
-                    price = Decimal(i['descr']['price'])
-                    order = i
-                    index = j
+                if (i['descr']['leverage'] == 'none'):
+                      print("\033[91mINFO!! Non-margin sell order detected. Continue.\033[00m")
+                else:
+                    if (price == None or price > Decimal(i['descr']['price'])):
+                        price = Decimal(i['descr']['price'])
+                        order = i
+                        index = j
             j += 1
         if (order == None):
             return None, None
@@ -443,9 +449,9 @@ def show_next_open(order_k, order_v):
     try:
         if (order_v != None):
             if (order_v['descr']['type'] == "sell"):
-                print("\033[31m")
+                print("\033[31m", end="")
             else:
-                print("\033[32m")
+                print("\033[32m", end="")
             print("{:<20s}{:>15s}{:>15s}{:>15s}".format("NEXT ORDER " + order_v['descr']['type'].upper() + ":", "PRICE" ,"VOL", "LEV"))
             print("{:<20s}{:>15s}{:>15.8f}{:>15s}\033[30m".format(order_k, order_v['descr']['price'], Decimal(order_v['vol']) - Decimal(order_v['vol_exec']), order_v['descr']['leverage']))
         return None
@@ -466,6 +472,9 @@ def get_total_open(open_orders, order_type):
         vol = Decimal(0)
         for i in open_orders:
             if (i['descr']['type'] == order_type):
+                if (i['descr']['leverage'] == 'none'):
+                    print("\033[91mINFO!! Non-margin %s order detected. Continue.\033[00m" % order_type)
+                else:
                     vol = vol + Decimal(i['vol']) - Decimal(i['vol_exec'])
         return vol
     except:

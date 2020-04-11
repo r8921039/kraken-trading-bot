@@ -14,7 +14,8 @@ start_price = -1000000
 step_price = 0
 order_count = 1
 order_vol = 1
-leverage = "5:1"
+#leverage = "5:1"
+leverage = "none"
 dry_run = False
 
 if (len(sys.argv) > 1):
