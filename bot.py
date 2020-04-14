@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-    
+
+import argparse
 from lib import *
 
 market_mode = "bull"
@@ -11,25 +12,26 @@ sell_to_curr_premium = 3
 sell_to_buy_premium = 3
 curr_to_buy_premium = 2
 
-if (len(sys.argv) > 3):
-    buy_step = int(sys.argv[3])
+parser = argparse.ArgumentParser(description='bot args: <sell_price>/<sell_step>/<buy_step>')
+ticker = get_ticker()
+sell_step = 60
+buy_step = 100
+if (ticker == TypeError):
+    sys.exit()
 else:
-    buy_step = 100
-
-if (len(sys.argv) > 2):
-    sell_step = abs(int(sys.argv[2]))
-else:
-    sell_step = 60
-
-if (len(sys.argv) > 1):
-    sell_price = int(sys.argv[1])
-else:
-    ticker = get_ticker()
-    if (ticker == TypeError):
-        sys.exit()
-    else:
-        #sell_price = round(Decimal(ticker['price']) / buy_step) * buy_step
-        sell_price = round(Decimal(ticker['ave']) / buy_step) * buy_step
+    #sell_price = round(Decimal(ticker['price']) / buy_step) * buy_step
+    sell_price = round(Decimal(ticker['ave']) / buy_step) * buy_step
+parser.add_argument('-sp', '-p', default=sell_price, type=int, help='sell price (default: %s)' % sell_price)
+parser.add_argument('-ss', default=sell_step, type=int, help='sell step (default: %s)' % sell_step)
+parser.add_argument('-bs', default=buy_step, type=int, help='buy step (default: %s)' % buy_step)
+args = parser.parse_args()
+sell_price = args.sp
+sell_step = args.ss
+buy_step = args.bs
+#print(sell_price)
+#print(sell_step)
+#print(buy_step)
+#sys.exit()
 
 buy_price = Decimal(sell_price - sell_to_buy_premium * buy_step)
 
