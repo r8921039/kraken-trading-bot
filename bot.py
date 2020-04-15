@@ -180,7 +180,7 @@ while True:
         if (Decimal(curr_price) < Decimal(base_price)):
             order_price = Decimal(base_price)
         else:
-            order_price = Decimal(curr_price) + Decimal(sell_step)
+            order_price = round(Decimal(curr_price)) + Decimal(sell_step)
     
         add_orders("sell", order_price, 0, 1, order_vol, leverage, False)
     
