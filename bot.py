@@ -6,7 +6,8 @@ from lib import *
 market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
-adj_wait_secs = 86400
+# 6h: 21600 = (86400 / 4)
+adj_wait_secs = 21600 
 discount_rate = 0.93
 sell_to_curr_premium = 3
 sell_to_buy_premium = 3
@@ -21,7 +22,7 @@ if (ticker == TypeError):
 else:
     #sell_price = round(Decimal(ticker['price']) / buy_step) * buy_step
     sell_price = round(Decimal(ticker['ave']) / buy_step) * buy_step
-parser.add_argument('-sp', '-p', default=sell_price, type=int, help='sell price (default: %s)' % sell_price)
+parser.add_argument('-sp', '-s', '-p', default=sell_price, type=int, help='sell price (default: %s)' % sell_price)
 parser.add_argument('-ss', default=sell_step, type=int, help='sell step (default: %s)' % sell_step)
 parser.add_argument('-bs', default=buy_step, type=int, help='buy step (default: %s)' % buy_step)
 args = parser.parse_args()
