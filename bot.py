@@ -9,13 +9,15 @@ refresh_time = 30
 # 6h: 21600 = (86400 / 4)
 adj_wait_secs = 21600 
 discount_rate = 0.93
-sell_to_curr_premium = 3
-sell_to_buy_premium = 3
-curr_to_buy_premium = 2
+#discount_rate = 0.96
+sell_to_curr_premium = 2
+sell_to_buy_premium = 2
+curr_to_buy_premium = 1
+min_buy_price = 6050 
 
 parser = argparse.ArgumentParser(description='bot args: <sell_price>/<sell_step>/<buy_step>')
 ticker = get_ticker()
-sell_step = 60
+sell_step = 80
 buy_step = 100
 if (ticker == TypeError):
     sys.exit()
@@ -36,15 +38,16 @@ buy_step = args.bs
 
 buy_price = Decimal(sell_price - sell_to_buy_premium * buy_step)
 
-tot_order_vol = Decimal(buy_price / buy_step)
+tot_order_vol = Decimal((buy_price - min_buy_price) / buy_step + 1)
 
 print()
 print("args: <sell_price> <sell_step> <buy_step>")
 print()
 print("{:<20s}{:>15.0f}".format("SELL PRICE", sell_price))
 print("{:<20s}{:>15.0f}".format("SELL STEP", sell_step))
-print("{:<20s}{:>15.0f}".format("BUY  PRICE", buy_price))
+print("{:<20s}{:>15.0f}".format("BUY  PRICE MAX", buy_price))
 print("{:<20s}{:>15.0f}".format("BUY  STEP", buy_step))
+print("{:<20s}{:>15.0f}".format("BUY  PIRCE MIN", min_buy_price))
 print("{:<20s}{:>15.0f}".format("TOTAL ORDER VOL", tot_order_vol))
 print()
 print("Press <enter> to continue or 'n' to cancel (y/n)?")
@@ -152,7 +155,7 @@ while True:
             and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
         buy_price = round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step
         sell_price = Decimal(buy_price + sell_to_buy_premium * buy_step)
-        tot_order_vol = Decimal(buy_price / buy_step)
+        tot_order_vol = Decimal((buy_price - min_buy_price) / buy_step + 1)
         print("\033[91mINFO!! Higher sell_price/buy_price/tot_volume to  %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
         continue
 

@@ -20,17 +20,17 @@ leverage = "5:1"
 dry_run = False
 
 parser = argparse.ArgumentParser(description='trade args: <start_price> <order_volume> <step_price> <order_count> <dry_run>')
-parser.add_argument('-p', default=start_price, type=int, required=True, help='start price (default: %s)' % start_price)
-parser.add_argument('-s', default=step_price, type=int, help='step price (default: %s)' % step_price)
+parser.add_argument('-p', default=start_price, type=str, required=True, help='start price (default: %s)' % start_price)
+parser.add_argument('-s', default=step_price, type=str, help='step price (default: %s)' % step_price)
 parser.add_argument('-c', default=order_count, type=int, help='order count (default: %s)' % order_count)
-parser.add_argument('-v', default=order_vol, type=int, help='order volume (default: %s)' % order_vol)
+parser.add_argument('-v', default=order_vol, type=str, help='order volume (default: %s)' % order_vol)
 parser.add_argument('-l', default=leverage, type=str, help='leverage (default: %s)' % leverage)
 parser.add_argument('-d', default=dry_run, action='store_true', help='dry run (default: %s)' % dry_run)
 args = parser.parse_args()
 start_price = args.p
 step_price = args.s
 order_count = args.c
-order_vol = args.v
+order_vol = str(Decimal(args.v))
 leverage = args.l
 dry_run = args.d
 
@@ -42,12 +42,12 @@ print()
 print("args: <start_price> <order_volume> <step_price> <order_count> <leverage> <dry_run>")
 print()
 print("{:<30s}{:>20s}".format("order type", order_type))
-print("{:<30s}{:>20.0f}".format("start price", start_price))
+print("{:<30s}{:>20s}".format("start price", start_price))
 if (step_price < 0):
-    print("{:<30s}{:>20.0f}".format("step price", step_price))
+    print("{:<30s}{:>20s}".format("step price", step_price))
 if (order_count > 1):
-    print("{:<30s}{:>20.0f}".format("count", order_count))
-print("{:<30s}{:>20.8f}".format("volume", order_vol))
+    print("{:<30s}{:>20s}".format("count", order_count))
+print("{:<30s}{:>20s}".format("volume", order_vol))
 if (leverage != "5:1"):
     print("{:<30s}{:>20s}".format("leverage", leverage))
 if (dry_run):

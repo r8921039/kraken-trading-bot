@@ -53,8 +53,11 @@ def delete_orders(order_type, price = None):
         j = 0
         print("DELETE ORDERS:") 
         for i in ol_v:
-            if (i['descr']['type'] == order_type):
-                if (price == None or Decimal(i['descr']['price']) == Decimal(price)):
+            if (price == None):
+                if (i['descr']['type'] == order_type):
+                    delete_order(ol_k[j], i)
+            else: 
+                if (Decimal(i['descr']['price']) == Decimal(price)):
                     delete_order(ol_k[j], i)
             j += 1
         return None
