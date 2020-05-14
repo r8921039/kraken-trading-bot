@@ -7,23 +7,35 @@ market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
 # 6h: 21600 = (86400 / 4)
-adj_wait_secs = 21600 
-discount_rate = 0.93
-#discount_rate = 0.96
-sell_to_curr_premium = 2
-sell_to_buy_premium = 2
-curr_to_buy_premium = 1
-min_buy_price = 6050 
+# 2h: 10800 = (86400 / 2)
+adj_wait_secs = 10800 
+buy_discount_rate = 0.98
+sell_to_curr_gap = 1.5
+sell_to_buy_gap = 1
+curr_to_buy_gap = 1
+buy_offset = 50
+max_buy_price = 9200 + buy_offset 
+min_buy_price = 6000 + buy_offset 
+sell_step = 35
+buy_step = 100
+
+def get_target_buy_price():
+    #target_price = (Decimal(ave_price) + Decimal(curr_price)) / 2
+    #target_price = Decimal(ave_price)
+    target_price = Decimal(curr_price)
+    return round(target_price * Decimal(buy_discount_rate) / buy_step) * buy_step + buy_offset
+
+def get_target_sell_price():
+    return get_target_buy_price() + sell_to_buy_gap * buy_step
 
 parser = argparse.ArgumentParser(description='bot args: <sell_price>/<sell_step>/<buy_step>')
 ticker = get_ticker()
-sell_step = 80
-buy_step = 100
 if (ticker == TypeError):
     sys.exit()
 else:
-    #sell_price = round(Decimal(ticker['price']) / buy_step) * buy_step
-    sell_price = round(Decimal(ticker['ave']) / buy_step) * buy_step
+    curr_price = ticker['price']
+    ave_price = ticker['ave']
+    sell_price = get_target_sell_price()
 parser.add_argument('-sp', '-s', '-p', default=sell_price, type=int, help='sell price (default: %s)' % sell_price)
 parser.add_argument('-ss', default=sell_step, type=int, help='sell step (default: %s)' % sell_step)
 parser.add_argument('-bs', default=buy_step, type=int, help='buy step (default: %s)' % buy_step)
@@ -36,7 +48,7 @@ buy_step = args.bs
 #print(buy_step)
 #sys.exit()
 
-buy_price = Decimal(sell_price - sell_to_buy_premium * buy_step)
+buy_price = Decimal(sell_price - sell_to_buy_gap * buy_step)
 
 tot_order_vol = Decimal((buy_price - min_buy_price) / buy_step + 1)
 
@@ -45,9 +57,13 @@ print("args: <sell_price> <sell_step> <buy_step>")
 print()
 print("{:<20s}{:>15.0f}".format("SELL PRICE", sell_price))
 print("{:<20s}{:>15.0f}".format("SELL STEP", sell_step))
-print("{:<20s}{:>15.0f}".format("BUY  PRICE MAX", buy_price))
-print("{:<20s}{:>15.0f}".format("BUY  STEP", buy_step))
-print("{:<20s}{:>15.0f}".format("BUY  PIRCE MIN", min_buy_price))
+print()
+print("{:<20s}{:>15.0f}".format("BUY PRICE", buy_price))
+print("{:<20s}{:>15.0f}".format("BUY STEP", buy_step))
+print()
+print("{:<20s}{:>15.0f}".format("BUY PRICE MAX", max_buy_price))
+print("{:<20s}{:>15.0f}".format("BUY PIRCE MIN", min_buy_price))
+print()
 print("{:<20s}{:>15.0f}".format("TOTAL ORDER VOL", tot_order_vol))
 print()
 print("Press <enter> to continue or 'n' to cancel (y/n)?")
@@ -140,24 +156,30 @@ while True:
     if (Decimal(tot_sell) > tot_order_vol):
         delete_order(next_sell_k, next_sell_v)
         continue
-    if (next_sell_v != None 
-            and Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
-            and Decimal(next_sell_v['descr']['price']) > Decimal(ave_price) 
-            and Decimal(next_sell_v['descr']['price']) > Decimal(curr_price) + sell_to_curr_premium * Decimal(sell_step)):
-        tmp_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
-        tmp_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
-        delete_order(next_sell_k, next_sell_v)
-        add_orders("sell", tmp_price, 0, 1, tmp_vol, leverage, False)
-        print("\033[91mINFO!! Lower next sell price/volume to %s %s \033[00m" % (tmp_price, tmp_vol))
-        continue
+    # adjust next sell price lower
+    if (next_sell_v != None):
+        curr_sell_price = Decimal(next_sell_v['descr']['price'])
+        if (Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
+                and curr_sell_price - sell_to_curr_gap * Decimal(sell_step) > Decimal(curr_price)):
+            new_sell_price = curr_sell_price - Decimal(sell_step)
+            new_sell_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
+            delete_order(next_sell_k, next_sell_v)
+            add_orders("sell", new_sell_price, 0, 1, new_sell_vol, leverage, False)
+            print("\033[93mINFO!! Lower next sell price/volume to %s %s \033[00m" % (tmp_price, tmp_vol))
+            continue
+    # adjust target buy price higher based on ave_price/curr_price
+    new_target_buy_price = get_target_buy_price()
     if (next_sell_v == None 
             #and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs 
-            and round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step > buy_price):
-        buy_price = round(Decimal(ave_price) * Decimal(discount_rate) / buy_step) * buy_step
-        sell_price = Decimal(buy_price + sell_to_buy_premium * buy_step)
-        tot_order_vol = Decimal((buy_price - min_buy_price) / buy_step + 1)
-        print("\033[91mINFO!! Higher sell_price/buy_price/tot_volume to  %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
-        continue
+            and new_target_buy_price > buy_price):
+        if (new_target_buy_price <= max_buy_price):
+            buy_price = new_target_buy_price 
+            sell_price = Decimal(buy_price + sell_to_buy_gap * buy_step)
+            tot_order_vol = Decimal((buy_price - min_buy_price) / buy_step + 1)
+            print("\033[93mINFO!! Higher sell_price/buy_price/tot_volume to %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
+            continue
+        else:
+            print("\033[93mINFO!! Max buy price %s reached. Won't adjust higher. \033[00m" % max_buy_price)
 
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
     if (delta_sell_vol < 0):
@@ -177,19 +199,18 @@ while True:
     
         # determine new sell price
         if (next_sell_v == None):
-            base_price = sell_price
+            new_sell_price = sell_price - Decimal(sell_step)
         else:
-            base_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
+            new_sell_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
     
-        if (Decimal(curr_price) < Decimal(base_price)):
-            order_price = Decimal(base_price)
+        if (Decimal(new_sell_price) > Decimal(curr_price)):
+            order_price = Decimal(new_sell_price)
         else:
             order_price = round(Decimal(curr_price)) + Decimal(sell_step)
     
         add_orders("sell", order_price, 0, 1, order_vol, leverage, False)
     
-
-    # with or without open positions - shall we add more buy
+    # add more buy
     delta_buy_vol = tot_order_vol - Decimal(tot_buy) - Decimal(pos_vol)
     if (delta_buy_vol > 0):
         # cap new buy volume
@@ -200,27 +221,27 @@ while True:
     
         # determine new buy price
         if (next_buy_v == None):
-            #base_price = buy_price
             print("\033[93mWARN!! No buy order detected. Almost impossible!! Abort!!\033[00m")
             sys.exit()
         else:
-            base_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
+            new_buy_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
     
-        if (Decimal(curr_price) > Decimal(base_price) + curr_to_buy_premium * Decimal(buy_step)):
-            order_price = Decimal(base_price)
+        if (Decimal(curr_price) - curr_to_buy_gap * Decimal(sell_step) > Decimal(new_buy_price)):
+            order_price = Decimal(new_buy_price)
             add_orders("buy", order_price, 0, 1, order_vol, leverage, False)
-        #else:
-        #    print("\033[93mINFO!! Current price is too close. Skip this time!\033[00m")
-        #    order_price = Decimal(curr_price) - Decimal(buy_step)
-    
-     
+        else:
+            print("\033[93mINFO!! New target buy price %s is too close to the current price. Skip this time!\033[00m" % new_buy_price)
     
     #
     # show pos and balance
     #
     
-    show_pos(pos)
-    #print()
-    show_trade_balance()
-    #print()
+    tot_fee = 0
+    tot_fee = show_pos(pos)
+    show_trade_balance(tot_fee)
     show_balance()
+
+
+
+
+
