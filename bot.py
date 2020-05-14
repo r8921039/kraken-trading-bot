@@ -14,15 +14,15 @@ sell_to_curr_gap = 1.5
 sell_to_buy_gap = 1
 curr_to_buy_gap = 1
 buy_offset = 50
-max_buy_price = 9200 + buy_offset 
+max_buy_price = 19000 + buy_offset 
 min_buy_price = 6000 + buy_offset 
 sell_step = 35
 buy_step = 100
 
 def get_target_buy_price():
-    #target_price = (Decimal(ave_price) + Decimal(curr_price)) / 2
+    target_price = (Decimal(ave_price) + Decimal(curr_price)) / 2
     #target_price = Decimal(ave_price)
-    target_price = Decimal(curr_price)
+    #target_price = Decimal(curr_price)
     return round(target_price * Decimal(buy_discount_rate) / buy_step) * buy_step + buy_offset
 
 def get_target_sell_price():
