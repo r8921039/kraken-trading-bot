@@ -6,13 +6,13 @@ from lib import *
 market_mode = "bull"
 leverage = "5:1"
 refresh_time = 30
-# 6h: 21600 = (86400 / 4)
-# 2h: 10800 = (86400 / 2)
-adj_wait_secs = 10800 
+# 1d: 86400
+# 1h: 3600 
+adj_wait_secs = 2 * 3600 
 buy_discount_rate = 0.98
-sell_to_curr_gap = 1.5
-sell_to_buy_gap = 1
-curr_to_buy_gap = 1
+sell_to_curr_gap = Decimal(1.5)
+sell_to_buy_gap = Decimal(1)
+curr_to_buy_gap = Decimal(1)
 buy_offset = 50
 max_buy_price = 19000 + buy_offset 
 min_buy_price = 6000 + buy_offset 
@@ -159,13 +159,14 @@ while True:
     # adjust next sell price lower
     if (next_sell_v != None):
         curr_sell_price = Decimal(next_sell_v['descr']['price'])
+        #print("\033[93mINFO!! Next sell order elapsed %s (sec) \033[00m" % (Decimal(time.time()) - Decimal(next_sell_v['opentm'])))
         if (Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
                 and curr_sell_price - sell_to_curr_gap * Decimal(sell_step) > Decimal(curr_price)):
             new_sell_price = curr_sell_price - Decimal(sell_step)
             new_sell_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
             delete_order(next_sell_k, next_sell_v)
             add_orders("sell", new_sell_price, 0, 1, new_sell_vol, leverage, False)
-            print("\033[93mINFO!! Lower next sell price/volume to %s %s \033[00m" % (tmp_price, tmp_vol))
+            print("\033[93mINFO!! Lower next sell price/volume to %s %s \033[00m" % (new_sell_price, new_sell_vol))
             continue
     # adjust target buy price higher based on ave_price/curr_price
     new_target_buy_price = get_target_buy_price()
@@ -201,7 +202,10 @@ while True:
         if (next_sell_v == None):
             new_sell_price = sell_price - Decimal(sell_step)
         else:
-            new_sell_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
+            if (Decimal(next_sell_v['vol']) >= 1):
+                new_sell_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
+            else:
+                new_sell_price = Decimal(next_sell_v['descr']['price'])
     
         if (Decimal(new_sell_price) > Decimal(curr_price)):
             order_price = Decimal(new_sell_price)
@@ -226,7 +230,7 @@ while True:
         else:
             new_buy_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
     
-        if (Decimal(curr_price) - curr_to_buy_gap * Decimal(sell_step) > Decimal(new_buy_price)):
+        if (Decimal(curr_price) - curr_to_buy_gap * Decimal(buy_step) > Decimal(new_buy_price)):
             order_price = Decimal(new_buy_price)
             add_orders("buy", order_price, 0, 1, order_vol, leverage, False)
         else:
