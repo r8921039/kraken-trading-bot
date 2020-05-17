@@ -9,7 +9,7 @@ refresh_time = 30
 # 1d: 86400
 # 1h: 3600 
 adj_wait_secs = 2 * 3600 
-buy_discount_rate = 0.98
+buy_discount_rate = 0.96
 sell_to_curr_gap = Decimal(1.5)
 sell_to_buy_gap = Decimal(1)
 curr_to_buy_gap = Decimal(1)
@@ -228,9 +228,14 @@ while True:
             print("\033[93mWARN!! No buy order detected. Almost impossible!! Abort!!\033[00m")
             sys.exit()
         else:
-            new_buy_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
+            # fill up to 1
+            if (order_vol < 1):
+                new_buy_price = Decimal(next_buy_v['descr']['price'])
+            # order_vol == 1
+            else:
+                new_buy_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
     
-        if (Decimal(curr_price) - curr_to_buy_gap * Decimal(buy_step) > Decimal(new_buy_price)):
+        if (Decimal(curr_price) - curr_to_buy_gap * Decimal(sell_step) > Decimal(new_buy_price)):
             order_price = Decimal(new_buy_price)
             add_orders("buy", order_price, 0, 1, order_vol, leverage, False)
         else:
