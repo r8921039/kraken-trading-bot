@@ -9,14 +9,14 @@ refresh_time = 30
 # 1d: 86400
 # 1h: 3600 
 adj_wait_secs = 2 * 3600 
-buy_discount_rate = 0.96
+buy_discount_rate = 0.99
 sell_to_curr_gap = Decimal(1.5)
 sell_to_buy_gap = Decimal(1)
 curr_to_buy_gap = Decimal(1)
 buy_offset = 50
 max_buy_price = 19000 + buy_offset 
 min_buy_price = 6000 + buy_offset 
-sell_step = 35
+sell_step = 40
 buy_step = 100
 
 def get_target_buy_price():
@@ -168,19 +168,19 @@ while True:
             add_orders("sell", new_sell_price, 0, 1, new_sell_vol, leverage, False)
             print("\033[93mINFO!! Lower next sell price/volume to %s %s \033[00m" % (new_sell_price, new_sell_vol))
             continue
-    # adjust target buy price higher based on ave_price/curr_price
+    # adjust target buy price based on ave_price/curr_price
     new_target_buy_price = get_target_buy_price()
-    if (next_sell_v == None 
+    if (next_sell_v == None and new_target_buy_price != buy_price):
             #and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs 
-            and new_target_buy_price > buy_price):
+            #and new_target_buy_price > buy_price):
         if (new_target_buy_price <= max_buy_price):
             buy_price = new_target_buy_price 
             sell_price = Decimal(buy_price + sell_to_buy_gap * buy_step)
             tot_order_vol = Decimal((buy_price - min_buy_price) / buy_step + 1)
-            print("\033[93mINFO!! Higher sell_price/buy_price/tot_volume to %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
+            print("\033[93mINFO!! Adjust sell_price/buy_price/tot_volume to %s %s %s \033[00m" % (sell_price, buy_price, tot_order_vol))
             continue
         else:
-            print("\033[93mINFO!! Max buy price %s reached. Won't adjust higher. \033[00m" % max_buy_price)
+            print("\033[93mINFO!! Max buy price %s reached vs proposed price $s. Skip. \033[00m" % (max_buy_price, new_target_buy_price))
 
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
     if (delta_sell_vol < 0):
@@ -228,12 +228,11 @@ while True:
             print("\033[93mWARN!! No buy order detected. Almost impossible!! Abort!!\033[00m")
             sys.exit()
         else:
-            # fill up to 1
-            if (order_vol < 1):
-                new_buy_price = Decimal(next_buy_v['descr']['price'])
-            # order_vol == 1
-            else:
+            if (order_vol == 1 or Decimal(next_buy_v['vol']) - Decimal(next_buy_v['vol_exec']) == 1):
                 new_buy_price = Decimal(next_buy_v['descr']['price']) + Decimal(buy_step)
+            # fill up fractional 
+            else:
+                new_buy_price = Decimal(next_buy_v['descr']['price'])
     
         if (Decimal(curr_price) - curr_to_buy_gap * Decimal(sell_step) > Decimal(new_buy_price)):
             order_price = Decimal(new_buy_price)
