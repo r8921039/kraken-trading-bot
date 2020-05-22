@@ -161,8 +161,9 @@ while True:
         curr_sell_price = Decimal(next_sell_v['descr']['price'])
         #print("\033[93mINFO!! Next sell order elapsed %s (sec) \033[00m" % (Decimal(time.time()) - Decimal(next_sell_v['opentm'])))
         if (Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs):
-            new_sell_price = min(curr_sell_price - Decimal(sell_step),
-                    round((curr_sell_price + Decimal(curr_price)) / (2 * sell_step)) * sell_step)
+            #new_sell_price = min(curr_sell_price - Decimal(sell_step),
+            #        round((curr_sell_price + Decimal(curr_price)) / (2 * sell_step)) * sell_step)
+            new_sell_price = curr_sell_price - Decimal(sell_step)
             if (new_sell_price - sell_to_curr_gap * Decimal(sell_step) > Decimal(curr_price)):
                 new_sell_price = curr_sell_price - Decimal(sell_step)
                 new_sell_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
