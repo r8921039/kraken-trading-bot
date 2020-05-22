@@ -16,7 +16,7 @@ curr_to_buy_gap = Decimal(1)
 buy_offset = 50
 max_buy_price = 19000 + buy_offset 
 min_buy_price = 6000 + buy_offset 
-sell_step = 40
+sell_step = 35
 buy_step = 100
 
 def get_target_buy_price():
@@ -160,18 +160,21 @@ while True:
     if (next_sell_v != None):
         curr_sell_price = Decimal(next_sell_v['descr']['price'])
         #print("\033[93mINFO!! Next sell order elapsed %s (sec) \033[00m" % (Decimal(time.time()) - Decimal(next_sell_v['opentm'])))
-        if (Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs 
-                and curr_sell_price - sell_to_curr_gap * Decimal(sell_step) > Decimal(curr_price)):
-            new_sell_price = curr_sell_price - Decimal(sell_step)
-            new_sell_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
-            delete_order(next_sell_k, next_sell_v)
-            add_orders("sell", new_sell_price, 0, 1, new_sell_vol, leverage, False)
-            print("\033[93mINFO!! Lower next sell price/volume to %s %s \033[00m" % (new_sell_price, new_sell_vol))
-            continue
+        if (Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs):
+            #new_sell_price = curr_sell_price - Decimal(sell_step)
+            new_sell_price = round((curr_sell_price + Decimal(curr_price)) / (2 * sell_step)) * sell_step
+            if (new_sell_price - sell_to_curr_gap * Decimal(sell_step) > Decimal(curr_price)):
+                new_sell_price = curr_sell_price - Decimal(sell_step)
+                new_sell_vol = Decimal(next_sell_v['vol']) - Decimal(next_sell_v['vol_exec'])
+                delete_order(next_sell_k, next_sell_v)
+                add_orders("sell", new_sell_price, 0, 1, new_sell_vol, leverage, False)
+                print("\033[93mINFO!! Lower next sell price/volume to %s %s \033[00m" % (new_sell_price, new_sell_vol))
+                continue
     # adjust target buy price based on ave_price/curr_price
     new_target_buy_price = get_target_buy_price()
-    if (next_sell_v == None and new_target_buy_price != buy_price):
-            #and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs 
+    if (new_target_buy_price != buy_price):
+            #and next_sell_v == None):
+            #and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs): 
             #and new_target_buy_price > buy_price):
         if (new_target_buy_price <= max_buy_price):
             buy_price = new_target_buy_price 
