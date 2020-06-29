@@ -27,8 +27,8 @@ parser.add_argument('-v', default=order_vol, type=str, help='order volume (defau
 parser.add_argument('-l', default=leverage, type=str, help='leverage (default: %s)' % leverage)
 parser.add_argument('-d', default=dry_run, action='store_true', help='dry run (default: %s)' % dry_run)
 args = parser.parse_args()
-start_price = args.p
-step_price = args.s
+start_price = Decimal(args.p)
+step_price = Decimal(args.s)
 order_count = args.c
 order_vol = str(Decimal(args.v))
 leverage = args.l
@@ -42,11 +42,11 @@ print()
 print("args: <start_price> <order_volume> <step_price> <order_count> <leverage> <dry_run>")
 print()
 print("{:<30s}{:>20s}".format("order type", order_type))
-print("{:<30s}{:>20s}".format("start price", start_price))
+print("{:<30s}{:>20f}".format("start price", start_price))
 if (step_price < 0):
-    print("{:<30s}{:>20s}".format("step price", step_price))
+    print("{:<30s}{:>20f}".format("step price", step_price))
 if (order_count > 1):
-    print("{:<30s}{:>20s}".format("count", order_count))
+    print("{:<30s}{:>20f}".format("count", order_count))
 print("{:<30s}{:>20s}".format("volume", order_vol))
 if (leverage != "5:1"):
     print("{:<30s}{:>20s}".format("leverage", leverage))

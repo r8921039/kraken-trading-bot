@@ -13,17 +13,17 @@ buy_discount_rate = 0.99
 sell_to_curr_gap = Decimal(1.5)
 sell_to_buy_gap = Decimal(1)
 curr_to_buy_gap = Decimal(1)
-buy_offset = 50
-max_buy_price = 19000 + buy_offset 
-min_buy_price = 6000 + buy_offset 
-sell_step = 35
+target_price_offset = 50
+max_buy_price = 9000 + target_price_offset 
+min_buy_price = 6000 + target_price_offset 
+sell_step = 30
 buy_step = 100
+adj_target = False
+adj_order = False
 
 def get_target_buy_price():
     target_price = (Decimal(ave_price) + Decimal(curr_price)) / 2
-    #target_price = Decimal(ave_price)
-    #target_price = Decimal(curr_price)
-    return round(target_price * Decimal(buy_discount_rate) / buy_step) * buy_step + buy_offset
+    return round(target_price * Decimal(buy_discount_rate) / buy_step) * buy_step + target_price_offset
 
 def get_target_sell_price():
     return get_target_buy_price() + sell_to_buy_gap * buy_step
@@ -157,7 +157,7 @@ while True:
         delete_order(next_sell_k, next_sell_v)
         continue
     # adjust next sell price lower
-    if (next_sell_v != None):
+    if (next_sell_v != None and adj_order == True):
         curr_sell_price = Decimal(next_sell_v['descr']['price'])
         #print("\033[93mINFO!! Next sell order elapsed %s (sec) \033[00m" % (Decimal(time.time()) - Decimal(next_sell_v['opentm'])))
         if (Decimal(time.time()) - Decimal(next_sell_v['opentm']) > adj_wait_secs):
@@ -173,7 +173,8 @@ while True:
                 continue
     # adjust target buy price based on ave_price/curr_price
     new_target_buy_price = get_target_buy_price()
-    if (new_target_buy_price != buy_price):
+    if (new_target_buy_price > buy_price and adj_target == True):
+    #if (new_target_buy_price != buy_price):
             #and next_sell_v == None):
             #and Decimal(time.time()) - Decimal(next_buy_v['opentm']) > adj_wait_secs): 
             #and new_target_buy_price > buy_price):
@@ -188,11 +189,13 @@ while True:
 
     delta_sell_vol = Decimal(pos_vol) - Decimal(tot_sell)
     if (delta_sell_vol < 0):
-        print("\033[91mERROR!! Open sell order volume > open positions! Abort!!\033[00m")
-        print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Total open position volume", pos_vol))
-        print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Total open sell order volume", tot_sell))
-        print("\033[91m{:<30s}{:>20.8f}\033[00m".format("Delta", delta_sell_vol))
-        sys.exit()    
+        print("\033[93mINFO!! Open sell order volume > open positions!\033[00m")
+        print("\033[93m{:<30s}{:>20.8f}\033[00m".format("Total open position volume", pos_vol))
+        print("\033[93m{:<30s}{:>20.8f}\033[00m".format("Total open sell order volume", tot_sell))
+        print("\033[93m{:<30s}{:>20.8f}\033[00m".format("Delta", delta_sell_vol))
+        if (delta_sell_vol < -0.01):
+            print("\033[91mERROR!! Abort!!\033[00m")
+            sys.exit()    
 
     # with open positions - shall we add more sell
     if (delta_sell_vol > 0):
@@ -204,7 +207,8 @@ while True:
     
         # determine new sell price
         if (next_sell_v == None):
-            new_sell_price = sell_price - Decimal(sell_step)
+            #new_sell_price = sell_price - Decimal(sell_step)
+            new_sell_price = sell_price
         else:
             if (Decimal(next_sell_v['vol']) >= 1):
                 new_sell_price = Decimal(next_sell_v['descr']['price']) - Decimal(sell_step)
